@@ -31,8 +31,7 @@ function App() {
 		running <i>&lsquo;npm run build-es&rsquo;</i>) in the React App.
 		</p>
 		<p>
-		In this example the pedigreejs builder changes size when the size of the web browser window
-		is changed.
+		In this example the pedigreejs builder is responsive and changes size for smaller devices.
 		</p>
 		</>
 	)
