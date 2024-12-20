@@ -6,7 +6,7 @@ import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache } from "./pedigreej
 import { useState, useEffect, useRef } from "react";
 
 
-export function FamilyTree() {
+export function PedigreeJS() {
 	const [dimensions, setDimensions] = useState({ 
 	  height: window.innerHeight,
 	  width: window.innerWidth
@@ -18,8 +18,8 @@ export function FamilyTree() {
     const opts = {
       'targetDiv': 'pedigreejs',
 	  'btn_target': 'pedigree_history',
-	  'width': (w > 1000 ? 1000 - 100: w - 50),
-	  'height': h - 200,
+	  'width': (w > 600 ? 500: w - 50),
+	  'height': h/2,
       'symbol_size': 30,
 	  'font_size': '.75em',
       'edit': false,
@@ -27,17 +27,17 @@ export function FamilyTree() {
       'zoomOut': 1.5,
       'zoomSrc':  ['button'] ,
       'labels': [['age', 'yob']],
-	  'diseases': [{'type': 'breast_cancer', 'colour': '#F68F35'},
-			 	   {'type': 'breast_cancer2', 'colour': 'pink'},
-			       {'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
-			       {'type': 'pancreatic_cancer', 'colour': '#4289BA'},
-			       {'type': 'prostate_cancer', 'colour': '#D5494A'}],
+	  'diseases': [	{'type': 'breast_cancer', 'colour': '#F68F35'},
+					{'type': 'breast_cancer2', 'colour': 'pink'},
+					{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
+					{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
+					{'type': 'prostate_cancer', 'colour': '#D5494A'}],
       'DEBUG': false};
 
 	  
 	  var local_dataset = pedigreejs_pedcache.current(opts);
 	  if (local_dataset !== undefined && local_dataset !== null) {
-	  	opts.dataset = local_dataset;
+		opts.dataset = local_dataset;
 	  } else {
 		opts.dataset = [
 			{"name": "m11", "sex": "M", "top_level": true},

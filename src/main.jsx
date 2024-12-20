@@ -1,3 +1,7 @@
+/**
+/* © 2024 University of Cambridge. All rights reserved.  
+**/
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 

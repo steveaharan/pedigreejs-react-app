@@ -10,7 +10,11 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+		...globals.jquery,
+		"d3": true,
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -33,6 +37,17 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      "no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
+      "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+      eqeqeq: ["error", "smart"],
+      "no-mixed-operators": "error",
+      "no-cond-assign": "error",
+      "no-loop-func": "error",
+      "no-throw-literal": "error",
+      "no-new-object": "error",
+      "no-useless-concat": "error",
+      "no-lone-blocks": "error",
+      "no-empty": "error"
     },
   },
 ]
