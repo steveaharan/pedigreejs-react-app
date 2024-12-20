@@ -27,8 +27,8 @@ function App() {
 		<p>
 		An example deployment of <a href="https://ccge-boadicea.github.io/pedigreejs/">pedigreejs
 		</a> using <a href="https://react.dev/">React</a> and <a href="https://vite.dev/">Vite</a>. 
-		The ES module bundle file for pedigreejs is used (built in the pedigreejs project by running 
-		&lsquo;npm run build-es&rsquo;) to use in the React App.
+		The pedigreejs ES module bundle file is used (built in the pedigreejs project by 
+		running <i>&lsquo;npm run build-es&rsquo;</i>) in the React App.
 		</p>
 		<p>
 		In this example the pedigreejs builder changes size when the size of the web browser window
