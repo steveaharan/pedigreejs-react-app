@@ -25,8 +25,8 @@ function App() {
 
 		<PedigreeJS/>
 		<p>
-		An example deployment of <a href="https://ccge-boadicea.github.io/pedigreejs/">pedigreejs
-		</a> using <a href="https://react.dev/">React</a> and <a href="https://vite.dev/">Vite</a>. 
+		An example deployment of <a href="https://ccge-boadicea.github.io/pedigreejs/" target="_blank">pedigreejs
+		</a> using <a href="https://react.dev/" target="_blank">React</a> and <a href="https://vite.dev/" target="_blank">Vite</a>. 
 		The pedigreejs ES module bundle file is used (built in the pedigreejs project by 
 		running <i>&lsquo;npm run build-es&rsquo;</i>) in the React App.
 		</p>
