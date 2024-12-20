@@ -1,4 +1,4 @@
-# pedigreejs - React App Example
+# pedigreejs - Example using React
 
 
 An example deployment of [pedigreejs](https://ccge-boadicea.github.io/pedigreejs/) using 
