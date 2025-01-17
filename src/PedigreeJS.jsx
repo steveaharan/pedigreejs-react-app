@@ -2,7 +2,7 @@
 /* © 2024 University of Cambridge. All rights reserved.  
 **/
 import React from 'react';
-import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache } from "./pedigreejs.es.v3.0.0-rc8";
+import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache, pedigreejs_io } from "./pedigreejs.es.v3.0.0-rc8";
 
 
 export class PedigreeJS extends React.Component {
@@ -41,15 +41,9 @@ export class PedigreeJS extends React.Component {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {
-			opts.dataset = [
-				{"name": "m11", "sex": "M", "top_level": true},
-				{"name": "f11", "display_name": "Jane",  "sex": "F", "status": 1, "top_level": true, "breast_cancer_diagnosis_age":67, "ovarian_cancer_diagnosis_age":63},
-				{"name": "m12", "sex": "M", "top_level": true},
-				{"name": "f12", "sex": "F", "top_level": true, "breast_cancer_diagnosis_age":55},
-				{"name": "m21", "sex": "M", "mother": "f11", "father": "m11", "age": 56},
-				{"name": "f21", "sex": "F", "mother": "f12", "father": "m12", "breast_cancer_diagnosis_age":55, "breast_cancer2_diagnosis_age": 60, "ovarian_cancer_diagnosis_age":58, "age": 63},
-				{"name": "ch1", "display_name": "Ana", "sex": "F", "mother": "f21", "father": "m21", "proband": true, "age": 25, "yob": 1996}
-			];
+			const canRiskData =
+			    '##CanRisk 3.0\n##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn\tBRCA1\tBRCA2\tPALB2\tATM\tCHEK2\tBARD1\tRAD51D\tRAD51C\tBRIP1\tER:PR:HER2:CK14:CK56\nFamID\t0\t0\tgrandparent1\t0\t0\tF\t0\t0\t85\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t1\t0\tgrandparent2\t0\t0\tM\t0\t0\t88\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t2\t0\tparent1\t0\t0\tF\t0\t0\t50\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t3\t0\tparent2\tgrandparent2\tgrandparent1\tM\t0\t0\t60\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t4\t0\tparent3\tgrandparent2\tgrandparent1\tF\t0\t0\t40\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t5\t0\tparent4\t0\t0\tM\t0\t0\t60\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t6\t0\tchild1\tparent2\tparent1\tF\t0\t0\t40\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t7\t0\tchild2\tparent2\tparent1\tF\t0\t0\t38\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t8\t0\tchild3\tparent2\tparent1\tF\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t9\t0\tchild4\tparent2\tparent1\tM\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t10\t0\tchild5\tparent2\tparent1\tF\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t11\t0\tchild6\tparent2\tparent1\tM\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t12\t0\tchild7\tparent4\tparent3\tF\t0\t0\t30\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t13\t0\tchild8\tparent4\tparent3\tF\t0\t0\t38\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t14\t0\tchild9\tparent4\tparent3\tF\t0\t0\t23\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t15\t0\tchild10\tparent2\tparent1\tM\t0\t0\t35\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t16\t0\tchild11\tparent4\tparent3\tF\t0\t0\t28\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t17\t0\tchild12\tchild10\tchild11\tM\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t18\t0\tchild13\tchild10\tchild11\tF\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t19\t0\tchild14\tchild10\tchild11\tM\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\nFamID\t20\t0\tchild15\tchild10\tchild11\tF\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0'
+			pedigreejs_io.load_data(canRiskData, opts)
 		}
 
 		return (
