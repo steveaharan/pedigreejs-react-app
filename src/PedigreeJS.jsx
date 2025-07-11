@@ -5,6 +5,329 @@ import React from 'react';
 import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache, pedigreejs_io } from "./pedigreejs.es.v3.0.0-rc8";
 
 
+// Person class to represent individuals in the pedigree
+class Person {
+	constructor({
+		id,
+		name,
+		sex,
+		isTarget = false,
+		fatherId = null,
+		motherId = null,
+		age = null,
+		yearOfBirth = null,
+		isDead = false,
+		isMonozygoticTwin = false,
+		isDizygoticTwin = false,
+		diseases = {},
+		geneticTests = {},
+		isAshkenazi = false
+	}) {
+		this.id = id;
+		this.name = name;
+		this.sex = sex; // 'M', 'F', or 'U'
+		this.isTarget = isTarget;
+		this.fatherId = fatherId;
+		this.motherId = motherId;
+		this.age = age;
+		this.yearOfBirth = yearOfBirth;
+		this.isDead = isDead;
+		this.isMonozygoticTwin = isMonozygoticTwin;
+		this.isDizygoticTwin = isDizygoticTwin;
+		this.diseases = diseases; // { breast_cancer: 55, prostate_cancer: 71, etc. }
+		this.geneticTests = geneticTests; // { BRCA1: 'N', BRCA2: 'P', etc. }
+		this.isAshkenazi = isAshkenazi;
+	}
+
+	// Convert to CanRisk format for PedigreeJS
+	toCanRiskFormat(familyId = 'XFAM') {
+		const data = {
+			familyId: familyId,
+			target: this.isTarget ? 1 : 0,
+			nameField: 0, // Name field (not used)
+			name: this.name,
+			fatherId: this.fatherId || 0,
+			motherId: this.motherId || 0,
+			sex: this.sex,
+			mzTwin: this.isMonozygoticTwin ? 1 : 0,
+			dead: this.isDead ? 1 : 0,
+			age: this.age || 0,
+			yob: this.yearOfBirth || 0,
+			bc1: this.diseases.breast_cancer || 0,
+			bc2: this.diseases.breast_cancer2 || 0,
+			oc: this.diseases.ovarian_cancer || 0,
+			pro: this.diseases.prostate_cancer || 0,
+			pan: this.diseases.pancreatic_cancer || 0,
+			ashkn: this.isAshkenazi ? 1 : 0,
+			brca1: this.formatGeneticTest('BRCA1'),
+			brca2: this.formatGeneticTest('BRCA2'),
+			palb2: this.formatGeneticTest('PALB2'),
+			atm: this.formatGeneticTest('ATM'),
+			chek2: this.formatGeneticTest('CHEK2'),
+			bard1: this.formatGeneticTest('BARD1'),
+			rad51d: this.formatGeneticTest('RAD51D'),
+			rad51c: this.formatGeneticTest('RAD51C'),
+			brip1: this.formatGeneticTest('BRIP1'),
+			pathology: '0:0:0:0:0' // Pathology results (ER:PR:HER2:CK14:CK56)
+		};
+		
+		return [
+			data.familyId,
+			data.target,
+			data.nameField,
+			data.name,
+			data.fatherId,
+			data.motherId,
+			data.sex,
+			data.mzTwin,
+			data.dead,
+			data.age,
+			data.yob,
+			data.bc1,
+			data.bc2,
+			data.oc,
+			data.pro,
+			data.pan,
+			data.ashkn,
+			data.brca1,
+			data.brca2,
+			data.palb2,
+			data.atm,
+			data.chek2,
+			data.bard1,
+			data.rad51d,
+			data.rad51c,
+			data.brip1,
+			data.pathology
+		].join('\t');
+	}
+
+	formatGeneticTest(testName) {
+		const result = this.geneticTests[testName];
+		if (!result) return '0:0';
+		
+		switch(result.toUpperCase()) {
+			case 'P': return '1:0'; // Positive
+			case 'N': return '0:1'; // Negative
+			default: return '0:0';  // Unknown
+		}
+	}
+}
+
+// Family data using Person class
+const createFamilyData = () => {
+	return [
+		new Person({
+			id: 'grandma',
+			name: 'grandma',
+			sex: 'F',
+			age: 85,
+			yearOfBirth: 1933,
+			isDead: true,
+			diseases: { breast_cancer: 55 }
+		}),
+		new Person({
+			id: 'grandpa',
+			name: 'grandpa',
+			sex: 'M',
+			age: 88,
+			yearOfBirth: 1930,
+			isDead: true,
+			diseases: { prostate_cancer: 71 }
+		}),
+		new Person({
+			id: 'parent1',
+			name: 'parent1',
+			sex: 'F',
+			age: 50
+		}),
+		new Person({
+			id: 'parent2',
+			name: 'parent2',
+			sex: 'M',
+			age: 60,
+			fatherId: 'grandpa',
+			motherId: 'grandma'
+		}),
+		new Person({
+			id: 'parent3',
+			name: 'parent3',
+			sex: 'F',
+			age: 55,
+			fatherId: 'grandpa',
+			motherId: 'grandma',
+			diseases: { breast_cancer: 53 }
+		}),
+		new Person({
+			id: 'parent4',
+			name: 'parent4',
+			sex: 'M',
+			age: 60
+		}),
+		new Person({
+			id: 'child1',
+			name: 'child1',
+			sex: 'F',
+			age: 40,
+			fatherId: 'parent2',
+			motherId: 'parent1',
+			diseases: { breast_cancer: 40 }
+		}),
+		new Person({
+			id: 'child2',
+			name: 'child2',
+			sex: 'F',
+			age: 38,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child3',
+			name: 'child3',
+			sex: 'F',
+			age: 36,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child4',
+			name: 'child4',
+			sex: 'M',
+			age: 36,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child5',
+			name: 'child5',
+			sex: 'F',
+			age: 36,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child6',
+			name: 'child6',
+			sex: 'M',
+			age: 36,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child7',
+			name: 'child7',
+			sex: 'F',
+			age: 25,
+			yearOfBirth: 2000,
+			fatherId: 'parent4',
+			motherId: 'parent3',
+			isTarget: true
+		}),
+		new Person({
+			id: 'child8',
+			name: 'child8',
+			sex: 'F',
+			age: 38,
+			fatherId: 'parent4',
+			motherId: 'parent3'
+		}),
+		new Person({
+			id: 'child9',
+			name: 'child9',
+			sex: 'F',
+			age: 23,
+			fatherId: 'parent4',
+			motherId: 'parent3'
+		}),
+		new Person({
+			id: 'child10',
+			name: 'child10',
+			sex: 'M',
+			age: 35,
+			fatherId: 'parent2',
+			motherId: 'parent1'
+		}),
+		new Person({
+			id: 'child11',
+			name: 'child11',
+			sex: 'F',
+			age: 28,
+			fatherId: 'parent4',
+			motherId: 'parent3'
+		}),
+		new Person({
+			id: 'child12',
+			name: 'child12',
+			sex: 'M',
+			age: 0,
+			fatherId: 'child10',
+			motherId: 'child11'
+		}),
+		new Person({
+			id: 'child13',
+			name: 'child13',
+			sex: 'F',
+			age: 0,
+			fatherId: 'child10',
+			motherId: 'child11'
+		}),
+		new Person({
+			id: 'child14',
+			name: 'child14',
+			sex: 'M',
+			age: 0,
+			fatherId: 'child10',
+			motherId: 'child11'
+		}),
+		new Person({
+			id: 'child15',
+			name: 'child15',
+			sex: 'F',
+			age: 0,
+			fatherId: 'child10',
+			motherId: 'child11'
+		})
+	];
+};
+
+// CanRisk format handler class
+class CanRiskFormatter {
+	static version = '3.0';
+	
+	static fields = [
+		'FamID', 'Name', 'Target', 'IndivID', 'FathID', 'MothID', 'Sex', 'MZtwin', 'Dead', 'Age', 'Yob',
+		'BC1', 'BC2', 'OC', 'PRO', 'PAN', 'Ashkn',
+		'BRCA1', 'BRCA2', 'PALB2', 'ATM', 'CHEK2', 'BARD1', 'RAD51D', 'RAD51C', 'BRIP1',
+		'ER:PR:HER2:CK14:CK56'
+	];
+	
+	static generateHeader() {
+		return [
+			`##CanRisk ${this.version}`,
+			`##${this.fields.join('\t')}`
+		];
+	}
+	
+	static formatFamilyData(familyData) {
+		const header = this.generateHeader();
+		const dataRows = familyData.map(person => person.toCanRiskFormat());
+		return header.concat(dataRows).join('\n');
+	}
+	
+	static getFieldNames() {
+		return this.fields;
+	}
+	
+	static getFieldCount() {
+		return this.fields.length;
+	}
+}
+
+// Convert family data to CanRisk format
+const generateCanRiskData = (familyData) => {
+	return CanRiskFormatter.formatFamilyData(familyData);
+};
+
 export class PedigreeJS extends React.Component {
 
 	constructor() {
@@ -50,31 +373,10 @@ export class PedigreeJS extends React.Component {
 		if (local_dataset !== undefined && local_dataset !== null) {
 			opts.dataset = local_dataset;
 		} else {
-			const canRiskData =
-			    '##CanRisk 3.0\n'+
-				'##FamID\tName\tTarget\tIndivID\tFathID\tMothID\tSex\tMZtwin\tDead\tAge\tYob\tBC1\tBC2\tOC\tPRO\tPAN\tAshkn\tBRCA1\tBRCA2\tPALB2\tATM\tCHEK2\tBARD1\tRAD51D\tRAD51C\tBRIP1\tER:PR:HER2:CK14:CK56\n'+
-				'XFAM\t0\t0\tgrandma\t0\t0\tF\t0\t1\t85\t1933\t55\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t1\t0\tgrandpa\t0\t0\tM\t0\t1\t88\t1930\t0\t0\t0\t71\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t2\t0\tparent1\t0\t0\tF\t0\t0\t50\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t3\t0\tparent2\tgrandpa\tgrandma\tM\t0\t0\t60\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t4\t0\tparent3\tgrandpa\tgrandma\tF\t0\t0\t55\t0\t53\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t5\t0\tparent4\t0\t0\tM\t0\t0\t60\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t6\t0\tchild1\tparent2\tparent1\tF\t0\t0\t40\t0\t40\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t7\t0\tchild2\tparent2\tparent1\tF\t0\t0\t38\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t8\t0\tchild3\tparent2\tparent1\tF\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t9\t0\tchild4\tparent2\tparent1\tM\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t10\t0\tchild5\tparent2\tparent1\tF\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t11\t0\tchild6\tparent2\tparent1\tM\t0\t0\t36\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t12\t1\tchild7\tparent4\tparent3\tF\t0\t0\t25\t2000\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t13\t0\tchild8\tparent4\tparent3\tF\t0\t0\t38\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t14\t0\tchild9\tparent4\tparent3\tF\t0\t0\t23\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t15\t0\tchild10\tparent2\tparent1\tM\t0\t0\t35\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t16\t0\tchild11\tparent4\tparent3\tF\t0\t0\t28\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t17\t0\tchild12\tchild10\tchild11\tM\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t18\t0\tchild13\tchild10\tchild11\tF\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t19\t0\tchild14\tchild10\tchild11\tM\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0\n'+
-				'XFAM\t20\t0\tchild15\tchild10\tchild11\tF\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0\t0:0:0:0:0'
-			pedigreejs_io.load_data(canRiskData, opts)
+			// Create family data using Person class
+			const familyData = createFamilyData();
+			const generatedCanRiskData = generateCanRiskData(familyData);
+			pedigreejs_io.load_data(generatedCanRiskData, opts);
 		}
 
 		return (
