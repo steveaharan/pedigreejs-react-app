@@ -23,6 +23,7 @@ class Person {
 		geneticTests = {},
 		isAshkenazi = false
 	}) {
+		console.log("Creating Person:", id, isTarget, name);
 		this.id = id;
 		this.name = name;
 		this.sex = sex; // 'M', 'F', or 'U'
@@ -43,8 +44,8 @@ class Person {
 	toCanRiskFormat(familyId = 'XFAM') {
 		const data = {
 			familyId: familyId,
+			display_name: this.isTarget ? "1" : "0", // Display name shows target status
 			target: this.isTarget ? 1 : 0,
-			nameField: 0, // Name field (not used)
 			name: this.name,
 			fatherId: this.fatherId || 0,
 			motherId: this.motherId || 0,
@@ -70,11 +71,12 @@ class Person {
 			brip1: this.formatGeneticTest('BRIP1'),
 			pathology: '0:0:0:0:0' // Pathology results (ER:PR:HER2:CK14:CK56)
 		};
-		
-		return [
+		console.log("Converting to CanRisk format:", data);
+		var rawData = 
+		[
 			data.familyId,
+			data.display_name,
 			data.target,
-			data.nameField,
 			data.name,
 			data.fatherId,
 			data.motherId,
@@ -98,8 +100,11 @@ class Person {
 			data.rad51d,
 			data.rad51c,
 			data.brip1,
-			data.pathology
-		].join('\t');
+			data.pathology,
+			// data.proband
+		];
+		console.log("Raw CanRisk data:", rawData);
+		return rawData.join('\t');
 	}
 
 	formatGeneticTest(testName) {
@@ -162,7 +167,7 @@ const createFamilyData = () => {
 			name: 'parent3',
 			sex: 'F',
 			age: 55,
-			diseases: { breast_cancer: 53 }
+			// diseases: { breast_cancer: 53 }
 		}),
 		new Person({
 			id: 'parent4',
@@ -380,6 +385,7 @@ class CanRiskFormatter {
 	static formatFamilyData(familyData) {
 		const header = this.generateHeader();
 		const dataRows = familyData.map(person => person.toCanRiskFormat());
+		console.log("Formatted CanRisk data:", dataRows);
 		return header.concat(dataRows).join('\n');
 	}
 	

@@ -568,10 +568,15 @@ function setChildrenId(children, id) {
 }
 
 function isProband(obj) {
-	return typeof $(obj).attr('proband') !== typeof undefined && $(obj).attr('proband') !== false;
+	console.log("Checking if proband: ", obj);
+	// Check for target property in the object (handle both string and numeric values)
+	return (obj.target !== undefined && obj.target !== null && obj.target !== 0 && obj.target !== '0') ||
+		   (obj.proband !== undefined && obj.proband !== null && obj.proband !== false) ||
+		   (typeof $(obj).attr !== 'undefined' && typeof $(obj).attr('target') !== typeof undefined && $(obj).attr('target') !== false);
 }
 
 function setProband(dataset, name, is_proband) {
+	console.log("Setting proband: ", name, is_proband);
 	$.each(dataset, function(_i, p) {
 		if (name === p.name)
 			p.proband = is_proband;
@@ -659,13 +664,16 @@ function unconnected(dataset){
 }
 
 function getProbandIndex(dataset) {
+	console.log("Finding proband index in dataset: ", dataset);
 	let proband;
 	$.each(dataset, function(i, val) {
 		if (isProband(val)) {
+			console.log("Found proband: ", val.name);
 			proband = i;
 			return proband;
 		}
 	});
+	console.log("Proband index: ", proband);
 	return proband;
 }
 
@@ -1559,6 +1567,7 @@ function readCanRisk(boadicea_lines) {
 		let attr = $.map(ln.split(delim), function(val, _i){return val.trim();});
 
 		if(attr.length > 1) {
+			console.log('ncol', ncol)
 			if(attr.length !== ncol[version-1]) {
 				console.error(ln, attr);
 				throw new Error('Found number of columns '+attr.length+'; expected '+ncol[version-1]+' for CanRisk version '+version);
@@ -1660,6 +1669,7 @@ function get_pedigree(dataset, famid, meta, isanon, version=3, ethnicity=undefin
 	let excl = $.map(dataset, function(p, _i){return 'exclude' in p && p.exclude ? p.name : null;});
 
 	// female risk factors
+	console.log('getProbandIndex 1', dataset);
 	let probandIdx  = getProbandIndex(dataset);
 	let sex = 'F';
 	if(probandIdx) {
@@ -4007,8 +4017,11 @@ function build(options) {
 	};
 
 	let partners = buildTree(opts, hidden_root, hidden_root)[0];
+	console.log('hidden_root', hidden_root);
 	let root = d3.hierarchy(hidden_root);
+	console.log('root', root);
 	roots[opts.targetDiv] = root;
+	console.log('roots', roots);	
 
 	// / get score at each depth used to adjust node separation
 	let tree_dimensions = get_tree_dimensions(opts);
@@ -4021,7 +4034,9 @@ function build(options) {
 	}).size([tree_dimensions.width, tree_dimensions.height]);
 
 	let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
+	console.log('nodes', nodes);
 	let flattenNodes = nodes.descendants();
+	console.log('flattenNodes', flattenNodes);
 
 	// check the number of visible nodes equals the size of the pedigree dataset
 	let vis_nodes = $.map(opts.dataset, function(p, _i){return p.hidden ? null : p;});
@@ -4334,7 +4349,9 @@ function build(options) {
 			});
 
 	// draw proband arrow
+	console.log('draw proband arrow opts', opts);
 	let probandIdx  = getProbandIndex(opts.dataset);
+	console.log('drawing proband arrow for probandIdx=', probandIdx);
 	if(typeof probandIdx !== 'undefined') {
 		let probandNode = getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
 		let triid = "triangle"+makeid(3);
@@ -4452,6 +4469,7 @@ function rebuild(opts) {
 	$("#"+opts.targetDiv).empty();
 	init_cache(opts);
 	try {
+		console.log("Rebuilding pedigree for ", opts);
 		build(opts);
 	} catch(e) {
 		console.error(e);
