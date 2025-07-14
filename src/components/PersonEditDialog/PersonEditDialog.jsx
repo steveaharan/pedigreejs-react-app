@@ -29,10 +29,11 @@ const PersonEditDialog = ({
   });
 
   const [diseaseAges, setDiseaseAges] = useState({});
+  const [activeTab, setActiveTab] = useState('basic');
 
   useEffect(() => {
     if (person?.data) {
-      setFormData({
+      const initialData = {
         name: '',
         display_name: '',
         age: '',
@@ -45,7 +46,16 @@ const PersonEditDialog = ({
         stillbirth: false,
         termination: false,
         ...person.data
-      });
+      };
+      
+      // If year of birth is present, calculate age automatically
+      if (initialData.yob && initialData.yob !== '') {
+        const currentYear = new Date().getFullYear();
+        const calculatedAge = currentYear - parseInt(initialData.yob);
+        initialData.age = calculatedAge >= 0 ? calculatedAge : '';
+      }
+      
+      setFormData(initialData);
 
       // Initialize disease ages
       const ages = {};
@@ -54,14 +64,33 @@ const PersonEditDialog = ({
         ages[disease.type] = person.data[ageKey] || '';
       });
       setDiseaseAges(ages);
+      
+      // Reset to basic tab when opening dialog
+      setActiveTab('basic');
     }
   }, [person, diseases]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+      
+      // If year of birth is changed, calculate age automatically
+      if (field === 'yob') {
+        if (value && value !== '') {
+          const currentYear = new Date().getFullYear();
+          const calculatedAge = currentYear - parseInt(value);
+          updated.age = calculatedAge >= 0 ? calculatedAge : '';
+        } else {
+          // If yob is cleared, don't automatically clear age
+          // Let user manually edit age
+        }
+      }
+      
+      return updated;
+    });
   };
 
   const handleDiseaseAgeChange = (diseaseType, age) => {
@@ -125,155 +154,194 @@ const PersonEditDialog = ({
         )}
 
         <div className="dialog-body">
-          <div className="form-section">
-            <h3>Basic Information</h3>
-            
-            <div className="form-row">
-              <label htmlFor="name">Individual ID:</label>
-              <input
-                type="text"
-                id="name"
-                value={formData.name || ''}
-                onChange={e => handleInputChange('name', e.target.value)}
-              />
-            </div>
-
-            <div className="form-row">
-              <label htmlFor="display_name">Display Name:</label>
-              <input
-                type="text"
-                id="display_name"
-                value={formData.display_name || ''}
-                onChange={e => handleInputChange('display_name', e.target.value)}
-                placeholder="Name shown on pedigree"
-              />
-            </div>
-
-            <div className="form-row">
-              <label htmlFor="age">Age:</label>
-              <input
-                type="number"
-                id="age"
-                min="0"
-                max="120"
-                value={formData.age || ''}
-                onChange={e => handleInputChange('age', e.target.value)}
-              />
-            </div>
-
-            <div className="form-row">
-              <label htmlFor="yob">Year of Birth:</label>
-              <input
-                type="number"
-                id="yob"
-                min="1900"
-                max="2050"
-                value={formData.yob || ''}
-                onChange={e => handleInputChange('yob', e.target.value)}
-              />
-            </div>
-
-            <div className="form-row">
-              <label>Sex:</label>
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="sex"
-                    value="M"
-                    checked={formData.sex === 'M'}
-                    onChange={e => handleInputChange('sex', e.target.value)}
-                  />
-                  Male
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="sex"
-                    value="F"
-                    checked={formData.sex === 'F'}
-                    onChange={e => handleInputChange('sex', e.target.value)}
-                  />
-                  Female
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="sex"
-                    value="U"
-                    checked={formData.sex === 'U'}
-                    onChange={e => handleInputChange('sex', e.target.value)}
-                  />
-                  Unknown
-                </label>
-              </div>
-            </div>
-
-            <div className="form-row">
-              <label>Status:</label>
-              <div className="radio-group">
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="0"
-                    checked={formData.status === '0' || formData.status === 0}
-                    onChange={e => handleInputChange('status', e.target.value)}
-                  />
-                  Alive
-                </label>
-                <label className="radio-label">
-                  <input
-                    type="radio"
-                    name="status"
-                    value="1"
-                    checked={formData.status === '1' || formData.status === 1}
-                    onChange={e => handleInputChange('status', e.target.value)}
-                  />
-                  Deceased
-                </label>
-              </div>
-            </div>
+          {/* Tab Navigation */}
+          <div className="tab-navigation">
+            <button 
+              className={`tab-button ${activeTab === 'basic' ? 'active' : ''}`}
+              onClick={() => setActiveTab('basic')}
+            >
+              Basic Information
+            </button>
+            <button 
+              className={`tab-button ${activeTab === 'diagnosis' ? 'active' : ''}`}
+              onClick={() => setActiveTab('diagnosis')}
+            >
+              Diagnosis
+            </button>
           </div>
 
-          <div className="form-section">
-            <h3>Reproduction</h3>
-            <div className="checkbox-group">
-              {['adopted_in', 'adopted_out', 'miscarriage', 'stillbirth', 'termination'].map(field => (
-                <label key={field} className="checkbox-label">
+          {/* Tab Content */}
+          {activeTab === 'basic' && (
+            <div className="tab-content">
+              <div className="form-section">
+                <div className="form-row">
+                  <label htmlFor="name">Individual ID:</label>
                   <input
-                    type="checkbox"
-                    checked={formData[field] || false}
-                    onChange={e => handleInputChange(field, e.target.checked)}
-                  />
-                  {capitalizeFirstLetter(field)}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {diseases.length > 0 && (
-            <div className="form-section">
-              <h3>Age of Diagnosis</h3>
-              {diseases.map(disease => (
-                <div key={disease.type} className="form-row">
-                  <label htmlFor={`disease_${disease.type}`}>
-                    {capitalizeFirstLetter(disease.type)}:
-                    <span 
-                      className="disease-color-indicator"
-                      style={{ backgroundColor: disease.colour }}
-                    ></span>
-                  </label>
-                  <input
-                    type="number"
-                    id={`disease_${disease.type}`}
-                    min="0"
-                    max="110"
-                    value={diseaseAges[disease.type] || ''}
-                    onChange={e => handleDiseaseAgeChange(disease.type, e.target.value)}
+                    type="text"
+                    id="name"
+                    value={formData.name || ''}
+                    readOnly
+                    className="readonly-field"
+                    title="Individual ID cannot be changed"
                   />
                 </div>
-              ))}
+
+                <div className="form-row">
+                  <label htmlFor="display_name">Display Name:</label>
+                  <input
+                    type="text"
+                    id="display_name"
+                    value={formData.display_name || ''}
+                    onChange={e => handleInputChange('display_name', e.target.value)}
+                    placeholder="Name shown on pedigree"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <label htmlFor="age">Age:</label>
+                  <input
+                    type="number"
+                    id="age"
+                    min="0"
+                    max="120"
+                    value={formData.age || ''}
+                    onChange={e => handleInputChange('age', e.target.value)}
+                    disabled={formData.yob && formData.yob !== ''}
+                    className={formData.yob && formData.yob !== '' ? 'readonly-field' : ''}
+                    title={formData.yob && formData.yob !== '' ? 'Age is automatically calculated from Year of Birth' : 'Enter age in years'}
+                  />
+                  {formData.yob && formData.yob !== '' && (
+                    <div className="field-helper-text">
+                      Automatically calculated from year of birth
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-row">
+                  <label htmlFor="yob">Year of Birth:</label>
+                  <input
+                    type="number"
+                    id="yob"
+                    min="1900"
+                    max="2050"
+                    value={formData.yob || ''}
+                    onChange={e => handleInputChange('yob', e.target.value)}
+                  />
+                </div>
+
+                <div className="form-row">
+                  <label>Sex:</label>
+                  <div className="radio-group">
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="sex"
+                        value="M"
+                        checked={formData.sex === 'M'}
+                        onChange={e => handleInputChange('sex', e.target.value)}
+                      />
+                      Male
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="sex"
+                        value="F"
+                        checked={formData.sex === 'F'}
+                        onChange={e => handleInputChange('sex', e.target.value)}
+                      />
+                      Female
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="sex"
+                        value="U"
+                        checked={formData.sex === 'U'}
+                        onChange={e => handleInputChange('sex', e.target.value)}
+                      />
+                      Unknown
+                    </label>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <label>Status:</label>
+                  <div className="radio-group">
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="0"
+                        checked={formData.status === '0' || formData.status === 0}
+                        onChange={e => handleInputChange('status', e.target.value)}
+                      />
+                      Alive
+                    </label>
+                    <label className="radio-label">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="1"
+                        checked={formData.status === '1' || formData.status === 1}
+                        onChange={e => handleInputChange('status', e.target.value)}
+                      />
+                      Deceased
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h3>Reproduction</h3>
+                <div className="checkbox-group">
+                  {['adopted_in', 'adopted_out', 'miscarriage', 'stillbirth', 'termination'].map(field => (
+                    <label key={field} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={formData[field] || false}
+                        onChange={e => handleInputChange(field, e.target.checked)}
+                      />
+                      {capitalizeFirstLetter(field)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'diagnosis' && (
+            <div className="tab-content">
+              <div className="form-section">
+                <h3>Age of Diagnosis</h3>
+                {diseases.length > 0 ? (
+                  diseases.map(disease => (
+                    <div key={disease.type} className="form-row">
+                      <label htmlFor={`disease_${disease.type}`}>
+                        {capitalizeFirstLetter(disease.type)}:
+                        <span 
+                          className="disease-color-indicator"
+                          style={{ backgroundColor: disease.colour }}
+                        ></span>
+                      </label>
+                      <input
+                        type="number"
+                        id={`disease_${disease.type}`}
+                        min="0"
+                        max="110"
+                        value={diseaseAges[disease.type] || ''}
+                        onChange={e => handleDiseaseAgeChange(disease.type, e.target.value)}
+                        placeholder="Age at diagnosis"
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-diseases-message">
+                    <p>No diseases configured for this pedigree.</p>
+                    <p className="help-text">Disease types are configured at the pedigree level.</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

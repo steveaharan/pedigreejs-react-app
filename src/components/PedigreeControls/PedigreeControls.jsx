@@ -199,10 +199,11 @@ const PedigreeControls = ({ opts }) => {
 			
 			// Create the React app's initial dataset (3-person family)
 			// This matches what's created in PedigreeJS_fixed.jsx createFamilyData()
+			// The 'name' field in pedigree dataset should match the ID, not the display name
 			const initialDataset = [
-				{"name": "parent3", "display_name": "parent3", "sex": "F", "age": 55, "top_level": true, "status": "0"},
-				{"name": "parent4", "display_name": "parent4", "sex": "M", "age": 60, "top_level": true, "status": "0"},
-				{"name": "child7", "display_name": "child7", "sex": "F", "age": 25, "yob": 2000, "mother": "parent3", "father": "parent4", "proband": true, "status": "0"}
+				{"name": "parent1", "sex": "F", "top_level": true, "status": "0"},
+				{"name": "parent2","sex": "M", "top_level": true, "status": "0"},
+				{"name": "123", "display_name": "Proband", "sex": "M", "mother": "parent1", "father": "parent2", "proband": true, "status": "0"}
 			];
 			
 			// Clear pedigree data from cache

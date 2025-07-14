@@ -76,7 +76,7 @@ class Person {
 			data.familyId,    // FamID
 			data.name,        // Name (display name)
 			data.target,      // Target (proband flag)
-			data.name,        // IndivID (unique individual ID)
+			this.id,          // IndivID (unique individual ID) - use ID not name!
 			data.fatherId,    // FathID
 			data.motherId,    // MothID
 			data.sex,         // Sex
@@ -120,26 +120,26 @@ class Person {
 const createFamilyData = () => {
 	return [
 		new Person({
-			id: 'parent3',
-			name: 'parent3',
+			id: 'parent1',
+			// name: 'Patricia',
 			sex: 'F',
-			age: 55,
+			// age: 55,
 			// diseases: { breast_cancer: 53 }
 		}),
 		new Person({
-			id: 'parent4',
-			name: 'parent4',
+			id: 'parent2',
+			// name: 'Tony',
 			sex: 'M',
-			age: 60
+			// age: 60
 		}),
 		new Person({
-			id: 'child7',
-			name: 'child7',
-			sex: 'F',
-			age: 25,
-			yearOfBirth: 2000,
-			fatherId: 'parent4',
-			motherId: 'parent3',
+			id: '123',
+			name: 'Proband',
+			sex: 'M',
+			// age: 55,
+			// yearOfBirth: 1970,
+			fatherId: 'parent2',
+			motherId: 'parent1',
 			isTarget: true
 		}),
 	];
@@ -172,7 +172,7 @@ export const PedigreeJS = () => {
 		'edit': true,
 		'showWidgets': true, // Keep widgets for node interactions
 		'zoomIn': .5,
-		'zoomOut': 1.5,
+		'zoomOut': 3.0,
 		'zoomSrc':  ['wheel', 'button'] ,
 		'labels': [['age', 'yob']],
 		'diseases': [	{'type': 'breast_cancer', 'colour': '#F68F35'},
@@ -289,7 +289,7 @@ export const PedigreeJS = () => {
 						const personIndex = opts.dataset.findIndex(p => p.name === selectedPerson.data.name);
 						if (personIndex !== -1) {
 							// Filter out properties that shouldn't be updated (internal pedigreejs properties)
-							const disallowed = ["id", "parent_node", "children", "parent", "depth", "height", "x", "y"];
+							const disallowed = ["id", "name", "parent_node", "children", "parent", "depth", "height", "x", "y"];
 							const filteredData = {};
 							for (const key in updatedData) {
 								if (disallowed.indexOf(key) === -1) {

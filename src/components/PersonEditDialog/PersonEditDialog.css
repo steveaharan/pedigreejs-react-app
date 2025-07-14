@@ -250,6 +250,94 @@
   font-style: italic;
 }
 
+/* Read-only field styling */
+.readonly-field {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  cursor: not-allowed !important;
+  border-color: #dee2e6 !important;
+}
+
+.readonly-field:focus {
+  box-shadow: none !important;
+  border-color: #dee2e6 !important;
+}
+
+.readonly-field::placeholder {
+  color: #adb5bd;
+}
+
+/* Helper text for fields */
+.field-helper-text {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Tab navigation styles */
+.tab-navigation {
+  display: flex;
+  border-bottom: 1px solid #e1e5e9;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  flex: 1;
+  text-align: center;
+}
+
+.tab-button:hover {
+  color: #4a90e2;
+  background-color: #f8f9fa;
+}
+
+.tab-button.active {
+  color: #4a90e2;
+  border-bottom-color: #4a90e2;
+  background-color: #f8f9fa;
+}
+
+.tab-content {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* No diseases message */
+.no-diseases-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.no-diseases-message p {
+  margin: 8px 0;
+}
+
+.help-text {
+  font-size: 0.875rem;
+  color: #adb5bd;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
   .dialog-content {
