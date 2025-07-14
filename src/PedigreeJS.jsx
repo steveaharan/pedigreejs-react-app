@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache, pedigreejs_io, pedigreejs_utils } from "./pedigreejs.es.v3.0.0-rc8";
 import PersonEditDialog from './PersonEditDialog';
+import PedigreeControls from './PedigreeControls';
 
 
 // Person class to represent individuals in the pedigree
@@ -420,7 +421,7 @@ export const PedigreeJS = () => {
 		'symbol_size': 30,
 		'font_size': '.75em',
 		'edit': true,
-		'showWidgets': true,
+		'showWidgets': true, // Keep widgets for node interactions
 		'zoomIn': .5,
 		'zoomOut': 1.5,
 		'zoomSrc':  ['wheel', 'button'] ,
@@ -645,6 +646,18 @@ export const PedigreeJS = () => {
 		// Store the edit handler globally so pedigreejs can access it
 		window.reactEditHandler = opts.onPersonEdit;
 		
+		// Expose pedigreejs functions globally for the React controls
+		window.pedigreejs = pedigreejs;
+		window.pedigreejs_zooming = pedigreejs_zooming;
+		window.pedigreejs_pedcache = pedigreejs_pedcache;
+		window.pedigreejs_io = pedigreejs_io;
+		window.pedigreejs_utils = pedigreejs_utils;
+		
+		// Ensure D3 is available globally (it should be available from pedigreejs)
+		if (typeof window.d3 === 'undefined' && typeof d3 !== 'undefined') {
+			window.d3 = d3;
+		}
+		
 		// Add global error handler for validation errors from jQuery triggers
 		const handleGlobalError = (e, opts, error) => {
 			console.warn('Global validation error caught:', error);
@@ -697,6 +710,29 @@ export const PedigreeJS = () => {
 			<div key="tree" id="pedigree"></div>
 			{/* Legacy node properties div - hidden but still needed for some functionality */}
 			<div id="node_properties" title="Edit Details" style={{display: 'none'}}></div>
+			
+			{/* React-based Pedigree Controls */}
+			<PedigreeControls opts={opts} />
+			
+			{/* Validation error notification */}
+			{validationError && (
+				<div style={{
+					position: 'fixed',
+					top: '20px',
+					right: '20px',
+					background: '#f8d7da',
+					border: '1px solid #f5c6cb',
+					borderRadius: '5px',
+					padding: '15px',
+					boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+					zIndex: 10000,
+					maxWidth: '400px',
+					color: '#721c24'
+				}}>
+					<strong>⚠️ Validation Error:</strong><br/>
+					{validationError}
+				</div>
+			)}
 			
 			{/* Rollback notification */}
 			{rollbackMessage && (
