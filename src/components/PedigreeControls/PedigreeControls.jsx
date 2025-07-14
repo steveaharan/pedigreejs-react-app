@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import './PedigreeControls.css';
-import ConfirmationDialog from './ConfirmationDialog';
+import ConfirmationDialog from '../ConfirmationDialog';
 
 const PedigreeControls = ({ opts }) => {
 	const [canUndo, setCanUndo] = useState(false);

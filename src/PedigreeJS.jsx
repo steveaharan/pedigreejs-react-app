@@ -3,8 +3,7 @@
 **/
 import React, { useState } from 'react';
 import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache, pedigreejs_io, pedigreejs_utils } from "./pedigreejs.es.v3.0.0-rc8";
-import PersonEditDialog from './PersonEditDialog';
-import PedigreeControls from './PedigreeControls';
+import { PersonEditDialog, PedigreeControls } from './components';
 
 
 // Person class to represent individuals in the pedigree
