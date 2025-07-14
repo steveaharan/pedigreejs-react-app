@@ -10,7 +10,8 @@ const PersonEditDialog = ({
   onClose, 
   person, 
   diseases = [], 
-  onSave 
+  onSave,
+  validationError = null
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -109,6 +110,19 @@ const PersonEditDialog = ({
           <h2>Edit Person Details</h2>
           <button className="close-button" onClick={onClose}>×</button>
         </div>
+
+        {validationError && (
+          <div className="validation-error">
+            <strong>Validation Error:</strong>
+            <div className="error-details">
+              {validationError.split('\n').map((line, index) => (
+                <div key={index} className={index === 0 ? 'error-main' : 'error-help'}>
+                  {line}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="dialog-body">
           <div className="form-section">

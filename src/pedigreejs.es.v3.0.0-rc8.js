@@ -342,7 +342,7 @@ function copy_dataset(dataset) {
 		dataset.sort(function(a,b){return (!a.id || !b.id ? 0: (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));});
 	}
 
-	let disallowed = ["id", "parent_node"];
+	let disallowed = ["id", "parent_node", "children", "parent", "depth", "height", "x", "y"];
 	let newdataset = [];
 	for(let i=0; i<dataset.length; i++){
 		let obj = {};
@@ -4656,27 +4656,83 @@ function group_top_level(dataset) {
 function rebuild(opts) {
 	$("#"+opts.targetDiv).empty();
 	init_cache(opts);
+	
+	// Check if this is a rollback operation
+	const isRollback = opts._isRollback === true;
+	
 	try {
-		console.log("Rebuilding pedigree for ", opts);
+		console.log(isRollback ? "Rolling back pedigree to previous state" : "Rebuilding pedigree for ", opts);
 		build(opts);
+		
+		// If this was a successful rollback, show a rollback success message briefly
+		if (isRollback) {
+			console.log("Rollback completed successfully");
+			// Emit rollback success event
+			$(document).trigger('rollback_success', [opts]);
+		}
 	} catch(e) {
-		console.error(e);
-		throw e;
+		console.error('Pedigree build error:', e);
+		
+		// Create a user-friendly error message
+		let errorMessage = e.message || 'Unknown error occurred';
+		
+		// Check if this is a validation error
+		const isValidationError = errorMessage.includes('pedigree') || 
+								 errorMessage.includes('mother') || 
+								 errorMessage.includes('father') ||
+								 errorMessage.includes('validation') ||
+								 errorMessage.includes('invalid');
+		
+		if (isValidationError && !isRollback) {
+			// Only emit validation error for non-rollback operations
+			$(document).trigger('validation_error', [opts, e]);
+		}
+		
+		// Create appropriate error message based on context
+		let contextMessage = 'Please check your pedigree data and try again.';
+		if (isRollback) {
+			contextMessage = 'Critical error: Unable to restore previous pedigree state. Please refresh the page.';
+		}
+		
+		// Always show an error message in the pedigree area to prevent blank page
+		$("#"+opts.targetDiv).html(`
+			<div style="padding:20px;color:#721c24;background:#f8d7da;border:1px solid #f5c6cb;margin:10px;border-radius:5px;font-family:Arial,sans-serif;">
+				<strong>⚠️ ${isRollback ? 'Rollback Failed' : 'Error Building Pedigree'}:</strong><br>
+				<div style="margin-top:8px;">${errorMessage}</div>
+				<div style="margin-top:12px;font-size:0.9em;color:#6c757d;">
+					${contextMessage}
+				</div>
+			</div>
+		`);
+		
+		// Don't re-throw - we've handled the error
+		return;
 	}
 
 	try {
 		templates.update(opts);		// eslint-disable-line no-undef
 	} catch(e) {
-		// templates not declared
+		// templates not declared - this is optional
+		console.warn('Templates update failed (optional):', e);
 	}
 }
 
 $(document).on('rebuild', function(_e, opts){
-	rebuild(opts);
+	try {
+		rebuild(opts);
+	} catch(e) {
+		console.error('Rebuild event handler error:', e);
+		// Don't re-throw to prevent app crash
+	}
 });
 
 $(document).on('build', function(_e, opts){
-	build(opts);
+	try {
+		build(opts);
+	} catch(e) {
+		console.error('Build event handler error:', e);
+		// Don't re-throw to prevent app crash
+	}
 });
 
 var pedigree = /*#__PURE__*/Object.freeze({
