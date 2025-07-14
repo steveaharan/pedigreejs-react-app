@@ -4048,13 +4048,36 @@ function build(options) {
 				 .attr("width", svg_dimensions.width)
 				 .attr("height", svg_dimensions.height);
 
+	// Create grid pattern
+	let defs = svg.append("defs");
+	
+	let pattern = defs.append("pattern")
+		.attr("id", "grid")
+		.attr("width", 30)
+		.attr("height", 30)
+		.attr("patternUnits", "userSpaceOnUse");
+	
+	// Add background to pattern first
+	pattern.append("rect")
+		.attr("width", 30)
+		.attr("height", 30)
+		.attr("fill", opts.background);
+	
+	// Add grid lines
+	pattern.append("path")
+		.attr("d", "M 30 0 L 0 0 0 30")
+		.attr("fill", "none")
+		.attr("stroke", "#cccccc")
+		.attr("stroke-width", "1")
+		.attr("opacity", "0.8");
+
 	svg.append("rect")
 		.attr("width", "100%")
 		.attr("height", "100%")
 		.attr("rx", 6)
 		.attr("ry", 6)
 		.style("stroke", "darkgrey")
-		.style("fill", opts.background) // or none
+		.style("fill", "url(#grid)")
 		.style("stroke-width", 1);
 
 	let ped = svg.append("g")
