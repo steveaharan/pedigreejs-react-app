@@ -282,7 +282,41 @@ export const PedigreeJS = () => {
 				person={selectedPerson}
 				diseases={opts.diseases}
 				onSave={(updatedData) => {
-					// Handle save logic here
+					console.log("Saving person data:", updatedData);
+					
+					// Find the person in the dataset and update their data
+					if (selectedPerson && opts.dataset) {
+						const personIndex = opts.dataset.findIndex(p => p.name === selectedPerson.data.name);
+						if (personIndex !== -1) {
+							// Filter out properties that shouldn't be updated (internal pedigreejs properties)
+							const disallowed = ["id", "parent_node", "children", "parent", "depth", "height", "x", "y"];
+							const filteredData = {};
+							for (const key in updatedData) {
+								if (disallowed.indexOf(key) === -1) {
+									filteredData[key] = updatedData[key];
+								}
+							}
+							
+							// Update the person's data in the dataset, preserving internal properties
+							opts.dataset[personIndex] = {
+								...opts.dataset[personIndex],
+								...filteredData
+							};
+							
+							console.log("Updated person in dataset:", opts.dataset[personIndex]);
+							
+							// Trigger pedigree rebuild to reflect changes (this will also update the cache)
+							if (typeof window.$ !== 'undefined') {
+								$(document).trigger('rebuild', [opts]);
+							} else {
+								// Fallback if jQuery is not available
+								pedigreejs.rebuild(opts);
+							}
+						} else {
+							console.error("Person not found in dataset for update");
+						}
+					}
+					
 					setDialogOpen(false);
 				}}
 				validationError={validationError}
@@ -308,7 +342,12 @@ const showPedigree = (opts) => {
 const pedigreejs_load = (opts) => {
 	try {
 		pedigreejs.rebuild(opts);
-		pedigreejs_zooming.scale_to_fit(opts);
+		// Only try scaling if rebuild was successful
+		try {
+			pedigreejs_zooming.scale_to_fit(opts);
+		} catch (scalingError) {
+			console.warn("Scaling failed, but pedigree should still be visible:", scalingError);
+		}
 	} catch(e) {
 		let msg;
 		if (typeof e === "string") {
