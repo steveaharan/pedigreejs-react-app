@@ -89,18 +89,33 @@ function set_count(opts, count) {
 		dict_cache[get_prefix(opts)+'COUNT'] = count;
 }
 
+// Helper function to safely stringify data with circular references
+function safeStringify(obj) {
+	const seen = new WeakSet();
+	return JSON.stringify(obj, (key, val) => {
+		if (val != null && typeof val == "object") {
+			if (seen.has(val)) {
+				// Skip circular reference
+				return {};
+			}
+			seen.add(val);
+		}
+		return val;
+	});
+}
+
 function init_cache(opts) {
 	if(!opts.dataset)
 		return;
 	let count = get_count(opts);
 	if (has_browser_storage(opts)) {   // local storage
-		set_browser_store(opts, get_prefix(opts)+count, JSON.stringify(opts.dataset));
+		set_browser_store(opts, get_prefix(opts)+count, safeStringify(opts.dataset));
 	} else {   // TODO :: array cache
 		console.warn('Local storage not found/supported for this browser!', opts.store_type);
 		max_limit = 500;
 		if(get_arr(opts) === undefined)
 			dict_cache[get_prefix(opts)] = [];
-		get_arr(opts).push(JSON.stringify(opts.dataset));
+		get_arr(opts).push(safeStringify(opts.dataset));
 	}
 	if(count < max_limit)
 		count++;
@@ -3764,12 +3779,22 @@ var widgets = /*#__PURE__*/Object.freeze({
 
 
 function addLabels(opts, node) {
-	// names of individuals
-	addLabel(opts, node, -(0.4 * opts.symbol_size), -(0.1 * opts.symbol_size),
-			function(d) {
-				if(opts.DEBUG)
-					return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-				return 'display_name' in d.data ? d.data.display_name : '';}, undefined, ['display_name']);
+	// names of individuals (centered)
+	node.filter(function (d) {
+		return !d.data.hidden;
+	}).append("text")
+	.attr("class", 'ped_label display_name')
+	.attr("x", 0)  // center position
+	.attr("y", -(0.9 * opts.symbol_size))
+	.attr("text-anchor", "middle")  // center the text
+	.attr("font-family", opts.font_family)
+	.attr("font-size", opts.font_size)
+	.attr("font-weight", opts.font_weight)
+	.text(function(d) {
+		if(opts.DEBUG)
+			return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
+		return 'display_name' in d.data ? d.data.display_name : '';
+	});
 
 	let font_size = parseInt(getPx(opts)) + 4;
 	// display age/yob label first
@@ -4018,7 +4043,7 @@ function build(options) {
 		keep_proband_on_reset: false,
 		font_size: '.75em',
 		font_family: 'Helvetica',
-		font_weight: 700,
+		font_weight: 300,
 		background: "#FAFAFA",
 		node_background: '#fdfdfd',
 		validate: true,
