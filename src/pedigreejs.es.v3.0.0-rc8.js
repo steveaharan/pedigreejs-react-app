@@ -1005,9 +1005,9 @@ function get_tree_dimensions(opts) {
 			maxscore = generation[depth];
 	}
 
-	let max_depth = Object.keys(generation).length*opts.symbol_size*3.5;
-	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.65 ?
-					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.65);
+	let max_depth = Object.keys(generation).length*opts.symbol_size*2.5;
+	let tree_width =  (svg_dimensions.width - opts.symbol_size > maxscore*opts.symbol_size*1.2 ?
+					   svg_dimensions.width - opts.symbol_size : maxscore*opts.symbol_size*1.2);
 	let tree_height = (svg_dimensions.height - opts.symbol_size > max_depth ?
 					   svg_dimensions.height - opts.symbol_size : max_depth);
 	return {'width': tree_width, 'height': tree_height};
@@ -3082,9 +3082,9 @@ function addWidgets(opts, node) {
 	let widgets = {
 		'addchild':   {
 			'text': '\uf063', 
-			'title': 'add child',   
-			'fx': fx, 
-			'fy': fy,
+			'title': 'Add Child',   
+			'fx': (-font_size/2)-25, 
+			'fy': +1.2*opts.symbol_size,
 			'styles': {"fill": "#27ae60", "font-weight": "bold"}
 		},
 		'addsibling': {
@@ -3103,9 +3103,9 @@ function addWidgets(opts, node) {
 		},
 		'addparents': {
 			'text': '\uf062', 
-			'title': 'add parents',
-			'fx': - 0.75*opts.symbol_size,
-			'fy': - opts.symbol_size + 11,
+			'title': 'Add Parents',
+			'fx': - 1*opts.symbol_size,
+			'fy': - opts.symbol_size + 5,
 			'styles': {"fill": "#9b59b6", "font-weight": "bold"}
 		},
 		'delete': {
@@ -3126,8 +3126,8 @@ function addWidgets(opts, node) {
 		widgets.settings = {
 			'text': '\uf013', 
 			'title': 'Settings', 
-			'fx': (-font_size/2)-25, 
-			'fy': -.8*opts.symbol_size,
+			'fx': (-font_size/2), 
+			'fy': .15*opts.symbol_size,
 			'styles': {"fill": "#f39c12", "font-weight": "bold"}
 		};
 	}
@@ -4105,7 +4105,7 @@ function build(options) {
 					' opts.height='+svg_dimensions.height+' height='+tree_dimensions.height);
 
 	let treemap = d3.tree().separation(function(a, b) {
-		return a.parent === b.parent || a.data.hidden || b.data.hidden ? 1.2 : 2.2;
+		return a.parent === b.parent || a.data.hidden || b.data.hidden ? 0.8 : 1.5;
 	}).size([tree_dimensions.width, tree_dimensions.height]);
 
 	let nodes = treemap(root.sort(function(a, b) { return a.data.id - b.data.id; }));
