@@ -3117,14 +3117,14 @@ function addWidgets(opts, node) {
 		'addpartner': {
 			'text': '\uf0c1', 
 			'title': 'Add Partner', 
-			'fx': (opts.symbol_size/2) + 5,
+			'fx': (opts.symbol_size/2) + 2,
 			'fy': +1.2*opts.symbol_size,
 			'styles': {"fill": "#e74c3c", "font-weight": "bold"}
 		},
 		'addparents': {
 			'text': '\uf062', 
 			'title': 'Add Parents',
-			'fx': - 1*opts.symbol_size,
+			'fx': (-font_size/2)-25, 
 			'fy': - opts.symbol_size + 5,
 			'styles': {"fill": "#9b59b6", "font-weight": "bold"}
 		},
@@ -3132,7 +3132,7 @@ function addWidgets(opts, node) {
 			'text': 'X', 
 			'title': 'Delete',
 			'fx': (opts.symbol_size/2) + 8,
-			'fy': -.8*opts.symbol_size,
+			'fy': - opts.symbol_size + 5,
 			'styles': {
 				"font-weight": "bold", 
 				"fill": "#e74c3c", 
