@@ -2946,7 +2946,7 @@ function addWidgets(opts, node) {
 							.attr("width",  font_size*8.5)
 							.attr("height", font_size*2.5)
 							.style("stroke", "#3498db")
-							.style("stroke-width", 2)
+							.style("stroke-width", 1)
 							.style("fill", "white")
 							.style("filter", "drop-shadow(0 4px 12px rgba(0,0,0,0.15))");
 
