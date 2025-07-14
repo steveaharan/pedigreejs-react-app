@@ -3105,7 +3105,7 @@ function addWidgets(opts, node) {
 		'addsibling': {
 			'text': '\uf234', 
 			'title': 'Add Sibling', 
-			'fx': (-font_size/2)-25, 
+			'fx': (-font_size/2), 
 			'fy': +1.2*opts.symbol_size,
 			'styles': {"fill": "#3498db", "font-weight": "bold"}
 		},
