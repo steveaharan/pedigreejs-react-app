@@ -1887,6 +1887,8 @@ function copyStylesInline(destinationNode, sourceNode) {
 			continue;
 		}
 		try {
+			console.log('poo');
+			console.log("copyStylesInline", srcChildNodes[cd], cd);
 			let style = srcChildNodes[cd].currentStyle || window.getComputedStyle(srcChildNodes[cd]);
 			if (style === "undefined" || style === null) continue;
 
@@ -3813,7 +3815,16 @@ function getPx(opts){
 	else if(emVal.indexOf("em") === -1)
 		return emVal;
 	emVal = parseFloat(emVal.replace('em', ''));
-	return (parseFloat(getComputedStyle($('#'+opts.targetDiv).get(0)).fontSize)*emVal)-1.0;
+	console.log('get height in pixels for '+opts.targetDiv+' emVal='+emVal);
+	
+	// Check if the target element exists
+	const targetElement = $('#'+opts.targetDiv).get(0);
+	if (!targetElement) {
+		console.warn('Target element not found:', opts.targetDiv, 'returning default font size');
+		return (16 * emVal) - 1.0; // fallback to 16px default font size
+	}
+	
+	return (parseFloat(window.getComputedStyle(targetElement).fontSize)*emVal)-1.0;
 }
 
 // initialise node dragging - SHIFT + DRAG
