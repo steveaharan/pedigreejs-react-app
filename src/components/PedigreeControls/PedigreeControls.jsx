@@ -193,10 +193,31 @@ const PedigreeControls = ({ opts }) => {
 
 	const confirmReset = () => {
 		try {
-			// Call the reset function from pedigreejs
-			if (window.pedigreejs && window.pedigreejs.reset) {
-				window.pedigreejs.reset(opts);
+			console.log('confirmReset');
+			// Implement reset functionality to restore to React app's initial state
+			console.log('Resetting pedigree to initial state');
+			
+			// Create the React app's initial dataset (3-person family)
+			// This matches what's created in PedigreeJS_fixed.jsx createFamilyData()
+			const initialDataset = [
+				{"name": "parent3", "display_name": "parent3", "sex": "F", "age": 55, "top_level": true, "status": "0"},
+				{"name": "parent4", "display_name": "parent4", "sex": "M", "age": 60, "top_level": true, "status": "0"},
+				{"name": "child7", "display_name": "child7", "sex": "F", "age": 25, "yob": 2000, "mother": "parent3", "father": "parent4", "proband": true, "status": "0"}
+			];
+			
+			// Clear pedigree data from cache
+			if (window.pedigreejs_pedcache && window.pedigreejs_pedcache.clear) {
+				window.pedigreejs_pedcache.clear(opts);
 			}
+			
+			// Set the new dataset
+			opts.dataset = initialDataset;
+			
+			// Trigger rebuild
+			if (window.$) {
+				window.$(document).trigger('rebuild', [opts]);
+			}
+			
 		} catch (error) {
 			console.error('Reset failed:', error);
 		}

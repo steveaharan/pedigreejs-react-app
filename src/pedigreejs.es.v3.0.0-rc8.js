@@ -4114,9 +4114,9 @@ function el_move(arr, old_index, new_index) {
 function build(options) {
 	let opts = $.extend({ // defaults
 		targetDiv: 'pedigree_edit',
-		dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
-				   {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
-				   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
+		// dataset: [ {"name": "m21", "display_name": "father", "sex": "M", "top_level": true},
+		// 		   {"name": "f21", "display_name": "mother", "sex": "F", "top_level": true},
+		// 		   {"name": "ch1", "display_name": "me", "sex": "F", "mother": "f21", "father": "m21", "proband": true}],
 		width: 1200,
 		height: 800,
 		symbol_size: 35,
