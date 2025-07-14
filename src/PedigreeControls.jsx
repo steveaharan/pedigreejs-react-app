@@ -5,6 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import './PedigreeControls.css';
+import ConfirmationDialog from './ConfirmationDialog';
 
 const PedigreeControls = ({ opts }) => {
 	const [canUndo, setCanUndo] = useState(false);
@@ -14,6 +15,7 @@ const PedigreeControls = ({ opts }) => {
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isDragging, setIsDragging] = useState(false);
 	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+	const [showResetConfirm, setShowResetConfirm] = useState(false);
 	
 	// Load position from localStorage or use default
 	const [position, setPosition] = useState(() => {
@@ -186,16 +188,23 @@ const PedigreeControls = ({ opts }) => {
 	};
 
 	const handleReset = () => {
-		if (window.confirm('This may result in loss of some data. Reset now?')) {
-			try {
-				// Call the reset function from pedigreejs
-				if (window.pedigreejs && window.pedigreejs.reset) {
-					window.pedigreejs.reset(opts);
-				}
-			} catch (error) {
-				console.error('Reset failed:', error);
+		setShowResetConfirm(true);
+	};
+
+	const confirmReset = () => {
+		try {
+			// Call the reset function from pedigreejs
+			if (window.pedigreejs && window.pedigreejs.reset) {
+				window.pedigreejs.reset(opts);
 			}
+		} catch (error) {
+			console.error('Reset failed:', error);
 		}
+		setShowResetConfirm(false);
+	};
+
+	const cancelReset = () => {
+		setShowResetConfirm(false);
 	};
 
 	const handleZoomIn = () => {
@@ -427,128 +436,142 @@ const PedigreeControls = ({ opts }) => {
 	}
 
 	return (
-		<div 
-			className={`pedigree-controls ${isDragging ? 'dragging' : ''}`}
-			style={{
-				left: `${position.x}px`,
-				top: `${position.y}px`,
-				cursor: isDragging ? 'grabbing' : 'grab'
-			}}
-			onMouseDown={handleMouseDown}
-			onTouchStart={handleTouchStart}
-		>
-			<div className="controls-header">
-				<span 
-					className="controls-title" 
-					title="Use Ctrl+Z/Y for undo/redo, Ctrl+/- for zoom. Drag to move controls."
-				>
-					Pedigree Controls
-				</span>
-				<div className="header-buttons">
-					<button
-						className="control-button reset-position-button"
-						onClick={resetPosition}
-						title="Reset Position"
+		<>
+			<div 
+				className={`pedigree-controls ${isDragging ? 'dragging' : ''}`}
+				style={{
+					left: `${position.x}px`,
+					top: `${position.y}px`,
+					cursor: isDragging ? 'grabbing' : 'grab'
+				}}
+				onMouseDown={handleMouseDown}
+				onTouchStart={handleTouchStart}
+			>
+				<div className="controls-header">
+					<span 
+						className="controls-title" 
+						title="Use Ctrl+Z/Y for undo/redo, Ctrl+/- for zoom. Drag to move controls."
 					>
-						<span className="control-icon">📍</span>
-					</button>
-					<button
-						className="control-button minimize-button"
-						onClick={toggleVisibility}
-						title="Hide Controls"
-					>
-						<span className="control-icon">−</span>
-					</button>
-				</div>
-			</div>
-			
-			<div className="controls-section">
-				{/* History Controls */}
-				<div className="controls-group">
-					<label className="controls-label">History</label>
-					<div className="button-group">
+						Pedigree Controls
+					</span>
+					<div className="header-buttons">
 						<button
-							className={`control-button ${!canUndo ? 'disabled' : ''}`}
-							onClick={handleUndo}
-							disabled={!canUndo}
-							title="Undo Last Change (Ctrl+Z / ⌘Z)"
+							className="control-button reset-position-button"
+							onClick={resetPosition}
+							title="Reset Position"
 						>
-							<span className="control-icon">↶</span>
-							<span className="control-text">Undo</span>
+							<span className="control-icon">📍</span>
 						</button>
 						<button
-							className={`control-button ${!canRedo ? 'disabled' : ''}`}
-							onClick={handleRedo}
-							disabled={!canRedo}
-							title="Redo Last Change (Ctrl+Shift+Z / ⌘⇧Z)"
-						>
-							<span className="control-icon">↷</span>
-							<span className="control-text">Redo</span>
-						</button>
-						<button
-							className="control-button reset-button"
-							onClick={handleReset}
-							title="Reset Pedigree"
-						>
-							<span className="control-icon">🔄</span>
-							<span className="control-text">Reset</span>
-						</button>
-					</div>
-				</div>
-
-				{/* Zoom Controls */}
-				<div className="controls-group">
-					<label className="controls-label">Zoom ({Math.round(zoomLevel * 100)}%)</label>
-					<div className="button-group">
-						<button
-							className="control-button"
-							onClick={handleZoomIn}
-							title="Zoom In (Ctrl+Plus / ⌘+)"
-						>
-							<span className="control-icon">+</span>
-						</button>
-						<button
-							className="control-button"
-							onClick={handleZoomOut}
-							title="Zoom Out (Ctrl+Minus / ⌘-)"
+							className="control-button minimize-button"
+							onClick={toggleVisibility}
+							title="Hide Controls"
 						>
 							<span className="control-icon">−</span>
 						</button>
-						<button
-							className="control-button"
-							onClick={handleZoomFit}
-							title="Fit to Screen (Ctrl+0 / ⌘0)"
-						>
-							<span className="control-icon">⊞</span>
-							<span className="control-text">Fit</span>
-						</button>
 					</div>
 				</div>
+				
+				<div className="controls-section">
+					{/* History Controls */}
+					<div className="controls-group">
+						<label className="controls-label">History</label>
+						<div className="button-group">
+							<button
+								className={`control-button ${!canUndo ? 'disabled' : ''}`}
+								onClick={handleUndo}
+								disabled={!canUndo}
+								title="Undo Last Change (Ctrl+Z / ⌘Z)"
+							>
+								<span className="control-icon">↶</span>
+								<span className="control-text">Undo</span>
+							</button>
+							<button
+								className={`control-button ${!canRedo ? 'disabled' : ''}`}
+								onClick={handleRedo}
+								disabled={!canRedo}
+								title="Redo Last Change (Ctrl+Shift+Z / ⌘⇧Z)"
+							>
+								<span className="control-icon">↷</span>
+								<span className="control-text">Redo</span>
+							</button>
+							<button
+								className="control-button reset-button"
+								onClick={handleReset}
+								title="Reset Pedigree"
+							>
+								<span className="control-icon">🔄</span>
+								<span className="control-text">Reset</span>
+							</button>
+						</div>
+					</div>
 
-				{/* View Controls */}
-				<div className="controls-group">
-					<label className="controls-label">View</label>
-					<div className="button-group">
-						<button
-							className="control-button"
-							onClick={handleFullscreen}
-							title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-						>
-							<span className="control-icon">{isFullscreen ? '⇲' : '⇱'}</span>
-							<span className="control-text">{isFullscreen ? 'Exit' : 'Full'}</span>
-						</button>
-						<button
-							className="control-button"
-							onClick={handleDownloadPNG}
-							title="Download PNG Image"
-						>
-							<span className="control-icon">📷</span>
-							<span className="control-text">PNG</span>
-						</button>
+					{/* Zoom Controls */}
+					<div className="controls-group">
+						<label className="controls-label">Zoom ({Math.round(zoomLevel * 100)}%)</label>
+						<div className="button-group">
+							<button
+								className="control-button"
+								onClick={handleZoomIn}
+								title="Zoom In (Ctrl+Plus / ⌘+)"
+							>
+								<span className="control-icon">+</span>
+							</button>
+							<button
+								className="control-button"
+								onClick={handleZoomOut}
+								title="Zoom Out (Ctrl+Minus / ⌘-)"
+							>
+								<span className="control-icon">−</span>
+							</button>
+							<button
+								className="control-button"
+								onClick={handleZoomFit}
+								title="Fit to Screen (Ctrl+0 / ⌘0)"
+							>
+								<span className="control-icon">⊞</span>
+								<span className="control-text">Fit</span>
+							</button>
+						</div>
+					</div>
+
+					{/* View Controls */}
+					<div className="controls-group">
+						<label className="controls-label">View</label>
+						<div className="button-group">
+							<button
+								className="control-button"
+								onClick={handleFullscreen}
+								title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+							>
+								<span className="control-icon">{isFullscreen ? '⇲' : '⇱'}</span>
+								<span className="control-text">{isFullscreen ? 'Exit' : 'Full'}</span>
+							</button>
+							<button
+								className="control-button"
+								onClick={handleDownloadPNG}
+								title="Download PNG Image"
+							>
+								<span className="control-icon">📷</span>
+								<span className="control-text">PNG</span>
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+
+			{/* Reset Confirmation Dialog */}
+			<ConfirmationDialog
+				isOpen={showResetConfirm}
+				title="Reset Pedigree"
+				message="This will reset the pedigree to its initial state. Any unsaved changes will be lost. Are you sure you want to continue?"
+				confirmText="Reset"
+				cancelText="Cancel"
+				type="warning"
+				onConfirm={confirmReset}
+				onCancel={cancelReset}
+			/>
+		</>
 	);
 };
 
