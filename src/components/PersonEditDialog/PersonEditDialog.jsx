@@ -17,7 +17,8 @@ const PersonEditDialog = ({
     name: '',
     display_name: '',
     age: '',
-    yob: '',
+    dob: '', // Changed from yob to dob
+    dod: '', // Date of Death
     sex: 'U',
     status: '0',
     adopted_in: false,
@@ -31,13 +32,72 @@ const PersonEditDialog = ({
   const [diseaseAges, setDiseaseAges] = useState({});
   const [activeTab, setActiveTab] = useState('basic');
 
+  // Helper function to format date input as DD/MM/YYYY
+  const formatDateInput = (value) => {
+    // Remove all non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+    
+    // Add slashes automatically
+    if (numericValue.length <= 2) {
+      return numericValue;
+    } else if (numericValue.length <= 4) {
+      return `${numericValue.slice(0, 2)}/${numericValue.slice(2)}`;
+    } else {
+      return `${numericValue.slice(0, 2)}/${numericValue.slice(2, 4)}/${numericValue.slice(4, 8)}`;
+    }
+  };
+
+  // Helper function to calculate age from date of birth
+  const calculateAgeFromDOB = (dob) => {
+    if (!dob) return '';
+    
+    // Parse DD/MM/YYYY format
+    const parts = dob.split('/');
+    if (parts.length !== 3) return '';
+    
+    const day = parseInt(parts[0]);
+    const month = parseInt(parts[1]) - 1; // Month is 0-indexed in Date
+    const year = parseInt(parts[2]);
+    
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return '';
+    
+    const birthDate = new Date(year, month, day);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age >= 0 ? age : '';
+  };
+
+  // Helper function to convert DD/MM/YYYY to YYYY-MM-DD for date input
+  const convertToDateInputFormat = (ddmmyyyy) => {
+    if (!ddmmyyyy) return '';
+    const parts = ddmmyyyy.split('/');
+    if (parts.length !== 3) return '';
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
+  // Helper function to convert YYYY-MM-DD to DD/MM/YYYY
+  const convertFromDateInputFormat = (yyyymmdd) => {
+    if (!yyyymmdd) return '';
+    const [year, month, day] = yyyymmdd.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   useEffect(() => {
     if (person?.data) {
       const initialData = {
         name: '',
         display_name: '',
         age: '',
-        yob: '',
+        dob: '', // Changed from yob
+        dod: '', // Date of Death
         sex: 'U',
         status: '0',
         adopted_in: false,
@@ -48,11 +108,15 @@ const PersonEditDialog = ({
         ...person.data
       };
       
-      // If year of birth is present, calculate age automatically
-      if (initialData.yob && initialData.yob !== '') {
-        const currentYear = new Date().getFullYear();
-        const calculatedAge = currentYear - parseInt(initialData.yob);
-        initialData.age = calculatedAge >= 0 ? calculatedAge : '';
+      // Convert yob to dob if yob exists but dob doesn't
+      if (person.data.yob && !person.data.dob) {
+        initialData.dob = `01/01/${person.data.yob}`;
+      }
+      
+      // If date of birth is present, calculate age automatically
+      if (initialData.dob) {
+        const age = calculateAgeFromDOB(initialData.dob);
+        initialData.age = age;
       }
       
       setFormData(initialData);
@@ -77,20 +141,43 @@ const PersonEditDialog = ({
         [field]: value
       };
       
-      // If year of birth is changed, calculate age automatically
-      if (field === 'yob') {
-        if (value && value !== '') {
-          const currentYear = new Date().getFullYear();
-          const calculatedAge = currentYear - parseInt(value);
-          updated.age = calculatedAge >= 0 ? calculatedAge : '';
-        } else {
-          // If yob is cleared, don't automatically clear age
-          // Let user manually edit age
-        }
+      // If date of birth is changed, format it and calculate age automatically
+      if (field === 'dob') {
+        // Format the input as DD/MM/YYYY
+        const formattedDate = formatDateInput(value);
+        updated.dob = formattedDate;
+        
+        // Calculate age from the formatted date
+        const calculatedAge = calculateAgeFromDOB(formattedDate);
+        updated.age = calculatedAge;
+      }
+      
+      // If date of death is changed, format it
+      if (field === 'dod') {
+        // Format the input as DD/MM/YYYY
+        const formattedDate = formatDateInput(value);
+        updated.dod = formattedDate;
       }
       
       return updated;
     });
+  };
+
+  const handleDatePickerChange = (value) => {
+    const formattedDate = convertFromDateInputFormat(value);
+    setFormData(prev => ({
+      ...prev,
+      dob: formattedDate,
+      age: calculateAgeFromDOB(formattedDate)
+    }));
+  };
+
+  const handleDeathDatePickerChange = (value) => {
+    const formattedDate = convertFromDateInputFormat(value);
+    setFormData(prev => ({
+      ...prev,
+      dod: formattedDate
+    }));
   };
 
   const handleDiseaseAgeChange = (diseaseType, age) => {
@@ -107,12 +194,21 @@ const PersonEditDialog = ({
     // Ensure status is a number
     updatedData.status = parseInt(updatedData.status);
     
-    // Ensure age and yob are numbers if provided
-    if (updatedData.age) {
-      updatedData.age = parseInt(updatedData.age);
-    }
-    if (updatedData.yob) {
-      updatedData.yob = parseInt(updatedData.yob);
+    // Handle date of birth and calculate age
+    if (updatedData.dob) {
+      // Always recalculate age from date of birth
+      const calculatedAge = calculateAgeFromDOB(updatedData.dob);
+      updatedData.age = calculatedAge >= 0 ? calculatedAge : 0;
+      
+      // Also save year of birth for backward compatibility
+      const parts = updatedData.dob.split('/');
+      if (parts.length === 3) {
+        updatedData.yob = parseInt(parts[2]);
+      }
+    } else {
+      // If no date of birth, age should be empty/zero
+      updatedData.age = 0;
+      updatedData.yob = 0;
     }
     
     // Add disease diagnosis ages
@@ -187,50 +283,7 @@ const PersonEditDialog = ({
                 </div>
 
                 <div className="form-row">
-                  <label htmlFor="display_name">Display Name:</label>
-                  <input
-                    type="text"
-                    id="display_name"
-                    value={formData.display_name || ''}
-                    onChange={e => handleInputChange('display_name', e.target.value)}
-                    placeholder="Name shown on pedigree"
-                  />
-                </div>
-
-                <div className="form-row">
-                  <label htmlFor="age">Age:</label>
-                  <input
-                    type="number"
-                    id="age"
-                    min="0"
-                    max="120"
-                    value={formData.age || ''}
-                    onChange={e => handleInputChange('age', e.target.value)}
-                    disabled={formData.yob && formData.yob !== ''}
-                    className={formData.yob && formData.yob !== '' ? 'readonly-field' : ''}
-                    title={formData.yob && formData.yob !== '' ? 'Age is automatically calculated from Year of Birth' : 'Enter age in years'}
-                  />
-                  {formData.yob && formData.yob !== '' && (
-                    <div className="field-helper-text">
-                      Automatically calculated from year of birth
-                    </div>
-                  )}
-                </div>
-
-                <div className="form-row">
-                  <label htmlFor="yob">Year of Birth:</label>
-                  <input
-                    type="number"
-                    id="yob"
-                    min="1900"
-                    max="2050"
-                    value={formData.yob || ''}
-                    onChange={e => handleInputChange('yob', e.target.value)}
-                  />
-                </div>
-
-                <div className="form-row">
-                  <label>Sex:</label>
+                  <label>Gender:</label>
                   <div className="radio-group">
                     <label className="radio-label">
                       <input
@@ -263,6 +316,62 @@ const PersonEditDialog = ({
                       Unknown
                     </label>
                   </div>
+                </div>                
+
+                <div className="form-row">
+                  <label htmlFor="display_name">Display Name:</label>
+                  <input
+                    type="text"
+                    id="display_name"
+                    value={formData.display_name || ''}
+                    onChange={e => handleInputChange('display_name', e.target.value)}
+                    placeholder="Name shown on pedigree"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <label htmlFor="age">Age:</label>
+                  <input
+                    type="number"
+                    id="age"
+                    min="0"
+                    max="120"
+                    value={formData.age || ''}
+                    readOnly
+                    className="readonly-field"
+                    title="Age is automatically calculated from Date of Birth"
+                    placeholder="Enter Date of Birth to calculate age"
+                  />
+                  <div className="field-helper-text">
+                    {formData.dob && formData.dob !== '' 
+                      ? 'Automatically calculated from date of birth' 
+                      : 'Enter Date of Birth below to calculate age'
+                    }
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <label htmlFor="dob">Date of Birth:</label>
+                  <div className="date-input-group">
+                    {/* <input
+                      type="text"
+                      id="dob-text"
+                      value={formData.dob || ''}
+                      onChange={e => handleInputChange('dob', e.target.value)}
+                      placeholder="DD/MM/YYYY"
+                      maxLength="10"
+                      className="date-text-input"
+                    /> */}
+                    <input
+                      type="date"
+                      id="dob-picker"
+                      value={convertToDateInputFormat(formData.dob)}
+                      onChange={e => handleDatePickerChange(e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
+                      className="date-picker-input"
+                      title="Use date picker or type DD/MM/YYYY in the text field"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-row">
@@ -290,6 +399,27 @@ const PersonEditDialog = ({
                     </label>
                   </div>
                 </div>
+
+                {/* Date of Death - only show if status is Deceased */}
+                {(formData.status === '1' || formData.status === 1) && (
+                  <div className="form-row">
+                    <label htmlFor="dod">Date of Death:</label>
+                    <div className="date-input-group">
+                      <input
+                        type="date"
+                        id="dod-picker"
+                        value={convertToDateInputFormat(formData.dod)}
+                        onChange={e => handleDeathDatePickerChange(e.target.value)}
+                        max={new Date().toISOString().split('T')[0]}
+                        className="date-picker-input"
+                        title="Use date picker or type DD/MM/YYYY in the text field"
+                      />
+                    </div>
+                    <div className="field-helper-text">
+                      Date when the individual died
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="form-section">

@@ -338,6 +338,31 @@
   color: #adb5bd;
 }
 
+/* Date input group styles */
+.date-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-text-input {
+  flex: 1;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.date-picker-input {
+  flex: 0 0 auto;
+  width: 140px;
+  cursor: pointer;
+}
+
+.date-input-group input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
   .dialog-content {
