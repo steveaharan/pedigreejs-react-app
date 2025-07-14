@@ -446,7 +446,32 @@ export const PedigreeJS = () => {
 				person={selectedPerson}
 				diseases={opts.diseases}
 				onSave={(updatedData) => {
-					// Handle save logic here
+					console.log("Saving person data:", updatedData);
+					
+					// Find the person in the dataset and update their data
+					if (selectedPerson && opts.dataset) {
+						const personIndex = opts.dataset.findIndex(p => p.name === selectedPerson.data.name);
+						if (personIndex !== -1) {
+							// Update the person's data in the dataset
+							opts.dataset[personIndex] = {
+								...opts.dataset[personIndex],
+								...updatedData
+							};
+							
+							console.log("Updated person in dataset:", opts.dataset[personIndex]);
+							
+							// Trigger pedigree rebuild to reflect changes (this will also update the cache)
+							if (typeof window.$ !== 'undefined') {
+								$(document).trigger('rebuild', [opts]);
+							} else {
+								// Fallback if jQuery is not available
+								pedigreejs.rebuild(opts);
+							}
+						} else {
+							console.error("Person not found in dataset for update");
+						}
+					}
+					
 					setDialogOpen(false);
 				}}
 				validationError={validationError}
