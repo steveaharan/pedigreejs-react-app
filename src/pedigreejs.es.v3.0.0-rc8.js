@@ -2919,41 +2919,52 @@ function addWidgets(opts, node) {
 	let font_size = parseInt($("body").css('font-size'));
 	let popup_selection = d3.select('.diagram');
 	popup_selection.append("rect").attr("class", "popup_selection")
-							.attr("rx", 6)
-							.attr("ry", 6)
+							.attr("rx", 12)
+							.attr("ry", 12)
 							.attr("transform", "translate(-1000,-100)")
 							.style("opacity", 0)
-							.attr("width",  font_size*7.9)
-							.attr("height", font_size*2)
-							.style("stroke", "darkgrey")
-							.attr("fill", "white");
+							.attr("width",  font_size*8.5)
+							.attr("height", font_size*2.5)
+							.style("stroke", "#3498db")
+							.style("stroke-width", 2)
+							.style("fill", "white")
+							.style("filter", "drop-shadow(0 4px 12px rgba(0,0,0,0.15))");
 
 	let square = popup_selection.append("text")  // male
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.style("font-size", "1.3em")
+		.style("fill", "#3498db")
+		.style("font-weight", "bold")
+		.style("cursor", "pointer")
 		.attr("class", "popup_selection fa-square persontype")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size/3)
-		.attr("y", font_size*1.5)
+		.attr("y", font_size*1.7)
 		.text("\uf096 ");
 	let square_title = square.append("svg:title").text("add male");
 
 	let circle = popup_selection.append("text")  // female
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.style("font-size", "1.3em")
+		.style("fill", "#e74c3c")
+		.style("font-weight", "bold")
+		.style("cursor", "pointer")
 		.attr("class", "popup_selection fa-circle persontype")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size*1.71)
-		.attr("y", font_size*1.5)
+		.attr("y", font_size*1.7)
 		.text("\uf10c ");
 	let circle_title = circle.append("svg:title").text("add female");
 
 	let unspecified = popup_selection.append("text")  // unspecified
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
-		.style("font-size", "1.1em")
+		.style("font-size", "1.3em")
+		.style("fill", "#95a5a6")
+		.style("font-weight", "bold")
+		.style("cursor", "pointer")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("x", font_size*0.065)
 		.attr("y", -font_size*0.065)
@@ -2965,10 +2976,13 @@ function addWidgets(opts, node) {
 		.attr('font-family', 'FontAwesome')
 		.style("opacity", 0)
 		.style("font-size", "1.6em")
+		.style("fill", "#f39c12")
+		.style("font-weight", "bold")
+		.style("cursor", "pointer")
 		.attr("transform", "translate(-1000,-100)")
 		.attr("class", "popup_selection fa-angle-up persontype dztwin")
 		.attr("x", font_size*4.62)
-		.attr("y", font_size*1.5)
+		.attr("y", font_size*1.7)
 		.text("\uf106 ");
 	dztwin.append("svg:title").text("add dizygotic/fraternal twins");
 
@@ -2976,10 +2990,13 @@ function addWidgets(opts, node) {
 	.attr('font-family', 'FontAwesome')
 	.style("opacity", 0)
 	.style("font-size", "1.6em")
+	.style("fill", "#9b59b6")
+	.style("font-weight", "bold")
+	.style("cursor", "pointer")
 	.attr("transform", "translate(-1000,-100)")
 	.attr("class", "popup_selection fa-caret-up persontype mztwin")
 	.attr("x", font_size*6.4)
-	.attr("y", font_size*1.5)
+	.attr("y", font_size*1.7)
 	.text("\uf0d8 ");
 	mztwin.append("svg:title").text("add monozygotic/identical twins");
 
@@ -3046,40 +3063,73 @@ function addWidgets(opts, node) {
 		})
 		.append("rect")
 		.attr("class", 'indi_rect')
-		.attr("rx", 6)
-		.attr("ry", 6)
-		.attr("x", function(_d) { return - 0.75*opts.symbol_size; })
-		.attr("y", function(_d) { return - opts.symbol_size; })
-		.attr("width",  (1.5 * opts.symbol_size)+'px')
-		.attr("height", (2 * opts.symbol_size)+'px')
-		.style("stroke", "black")
-		.style("stroke-width", 0.7)
+		.attr("rx", 8)
+		.attr("ry", 8)
+		.attr("x", function(_d) { return - 1.25*opts.symbol_size; })
+		.attr("y", function(_d) { return - 1.4*opts.symbol_size; })
+		.attr("width",  (2.5 * opts.symbol_size)+'px')
+		.attr("height", (2.8 * opts.symbol_size)+'px')
+		.style("stroke", "#3498db")
+		.style("stroke-width", 2)
 		.style("opacity", 0)
-		.attr("fill", "lightgrey");
+		.style("fill", "#e3f2fd")
+		.style("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.1))");
 
 	// widgets
 	let fx = function(_d) {return off - (0.75*opts.symbol_size);};
 	let fy = opts.symbol_size -2;
 	let off = 0;
 	let widgets = {
-		'addchild':   {'text': '\uf063', 'title': 'add child',   'fx': fx, 'fy': fy},
-		'addsibling': {'text': '\uf234', 'title': 'add sibling', 'fx': fx, 'fy': fy},
-		'addpartner': {'text': '\uf0c1', 'title': 'add partner', 'fx': fx, 'fy': fy},
+		'addchild':   {
+			'text': '\uf063', 
+			'title': 'add child',   
+			'fx': fx, 
+			'fy': fy,
+			'styles': {"fill": "#27ae60", "font-weight": "bold"}
+		},
+		'addsibling': {
+			'text': '\uf234', 
+			'title': 'Add Sibling', 
+			'fx': (-font_size/2)-25, 
+			'fy': +1.2*opts.symbol_size,
+			'styles': {"fill": "#3498db", "font-weight": "bold"}
+		},
+		'addpartner': {
+			'text': '\uf0c1', 
+			'title': 'Add Partner', 
+			'fx': (opts.symbol_size/2) + 5,
+			'fy': +1.2*opts.symbol_size,
+			'styles': {"fill": "#e74c3c", "font-weight": "bold"}
+		},
 		'addparents': {
-			'text': '\uf062', 'title': 'add parents',
+			'text': '\uf062', 
+			'title': 'add parents',
 			'fx': - 0.75*opts.symbol_size,
-			'fy': - opts.symbol_size + 11
+			'fy': - opts.symbol_size + 11,
+			'styles': {"fill": "#9b59b6", "font-weight": "bold"}
 		},
 		'delete': {
-			'text': 'X', 'title': 'delete',
-			'fx': (opts.symbol_size/2) - 1,
-			'fy': - opts.symbol_size + 12,
-			'styles': {"font-weight": "bold", "fill": "darkred", "font-family": "monospace"}
+			'text': 'X', 
+			'title': 'Delete',
+			'fx': (opts.symbol_size/2) + 8,
+			'fy': -.8*opts.symbol_size,
+			'styles': {
+				"font-weight": "bold", 
+				"fill": "#e74c3c", 
+				"font-family": "Arial, sans-serif",
+				"font-size": "0.9em"
+			}
 		}
 	};
 
 	if(opts.edit) {
-		widgets.settings = {'text': '\uf013', 'title': 'settings', 'fx': (-font_size/2)+2, 'fy': -opts.symbol_size + 11};
+		widgets.settings = {
+			'text': '\uf013', 
+			'title': 'Settings', 
+			'fx': (-font_size/2)-25, 
+			'fy': -.8*opts.symbol_size,
+			'styles': {"fill": "#f39c12", "font-weight": "bold"}
+		};
 	}
 
 	for(let key in widgets) {
@@ -3098,7 +3148,9 @@ function addWidgets(opts, node) {
 			.attr("yy", function(d){return d.y;})
 			.attr("x", widgets[key].fx)
 			.attr("y", widgets[key].fy)
-			.attr('font-size', '0.85em' )
+			.attr('font-size', '1em')
+			.style("cursor", "pointer")
+			.style("filter", "drop-shadow(0 1px 2px rgba(0,0,0,0.2))")
 			.text(widgets[key].text);
 
 		if('styles' in widgets[key])
