@@ -452,10 +452,19 @@ export const PedigreeJS = () => {
 					if (selectedPerson && opts.dataset) {
 						const personIndex = opts.dataset.findIndex(p => p.name === selectedPerson.data.name);
 						if (personIndex !== -1) {
-							// Update the person's data in the dataset
+							// Filter out properties that shouldn't be updated (internal pedigreejs properties)
+							const disallowed = ["id", "parent_node", "children", "parent", "depth", "height", "x", "y"];
+							const filteredData = {};
+							for (const key in updatedData) {
+								if (disallowed.indexOf(key) === -1) {
+									filteredData[key] = updatedData[key];
+								}
+							}
+							
+							// Update the person's data in the dataset, preserving internal properties
 							opts.dataset[personIndex] = {
 								...opts.dataset[personIndex],
-								...updatedData
+								...filteredData
 							};
 							
 							console.log("Updated person in dataset:", opts.dataset[personIndex]);
