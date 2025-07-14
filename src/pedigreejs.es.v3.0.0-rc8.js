@@ -3258,21 +3258,63 @@ function addWidgets(opts, node) {
 		}
 		d3.select(this).select('rect').style("opacity", 0.2);
 		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 1);
-		d3.select(this).selectAll('.indi_details').style("opacity", 0);
+		
+		// Animate labels down and fade slightly
+		const shift_distance = 1.2 * opts.symbol_size; // Lower finish position
+		d3.select(this).selectAll('.indi_details')
+			.transition()
+			.duration(200)
+			.ease(d3.easeQuadOut)
+			.attr("y", function() {
+				const originalY = parseFloat(d3.select(this).attr("data-original-y"));
+				return originalY + shift_distance;
+			})
+			.style("opacity", 1); // Keep them fully visible
+		
+		d3.select(this).select('.display_name')
+			.transition()
+			.duration(200)
+			.ease(d3.easeQuadOut)
+			.attr("y", function() {
+				const originalY = parseFloat(d3.select(this).attr("data-original-y"));
+				return originalY + shift_distance;
+			})
+			.style("opacity", 1); // Keep them fully visible
 
 		setLineDragPosition(opts.symbol_size-10, 0, opts.symbol_size-2, 0, d.x+","+(d.y+2));
 	})
-	.on("mouseout", function(d){
+	.on("mouseout", function(e, d){
 		if(dragging)
 			return;
 
 		d3.select(this).selectAll('.addchild, .addsibling, .addpartner, .addparents, .delete, .settings').style("opacity", 0);
 		if(highlight.indexOf(d) === -1)
 			d3.select(this).select('rect').style("opacity", 0);
-		d3.select(this).selectAll('.indi_details').style("opacity", 1);
+		
+		// Animate labels back up and fade in
+		d3.select(this).selectAll('.indi_details')
+			.transition()
+			.duration(200)
+			.ease(d3.easeQuadOut)
+			.attr("y", function() {
+				const originalY = parseFloat(d3.select(this).attr("data-original-y"));
+				return originalY;
+			})
+			.style("opacity", 1);
+		
+		d3.select(this).select('.display_name')
+			.transition()
+			.duration(200)
+			.ease(d3.easeQuadOut)
+			.attr("y", function() {
+				const originalY = parseFloat(d3.select(this).attr("data-original-y"));
+				return originalY;
+			})
+			.style("opacity", 1);
+		
 		// hide popup if it looks like the mouse is moving north
-		let xcoord = d3.pointer(d)[0];
-		let ycoord = d3.pointer(d)[1];
+		let xcoord = d3.pointer(e)[0];
+		let ycoord = d3.pointer(e)[1];
 		if(ycoord < 0.8*opts.symbol_size)
 			d3.selectAll('.popup_selection').style("opacity", 0);
 		if(!dragging) {
@@ -3786,31 +3828,20 @@ var widgets = /*#__PURE__*/Object.freeze({
 
 
 function addLabels(opts, node) {
-	// names of individuals (centered)
-	node.filter(function (d) {
-		return !d.data.hidden;
-	}).append("text")
-	.attr("class", 'ped_label display_name')
-	.attr("x", 0)  // center position
-	.attr("y", -(0.9 * opts.symbol_size))
-	.attr("text-anchor", "middle")  // center the text
-	.attr("font-family", opts.font_family)
-	.attr("font-size", opts.font_size)
-	.attr("font-weight", opts.font_weight)
-	.text(function(d) {
-		if(opts.DEBUG)
-			return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
-		return 'display_name' in d.data ? d.data.display_name : '';
-	});
-
 	let font_size = parseInt(getPx(opts)) + 4;
+	
+	// Reset y_offset for each node to ensure consistent positioning
+	node.each(function(d) {
+		d.y_offset = null;
+	});
+	
 	// display age/yob label first
 	for(let ilab=0; ilab<opts.labels.length; ilab++) {
 		let label = opts.labels[ilab];
 		let arr = (Array.isArray(label) ? label : [label]);
 		if(arr.indexOf('age') > -1 || arr.indexOf('yob') > -1) {
 			addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, arr, font_size); },
+				function(d) { return ypos(d, arr, font_size, opts); },
 				function(d) { return get_text(d, arr); }, 'indi_details', arr);
 		}
 	}
@@ -3819,7 +3850,7 @@ function addLabels(opts, node) {
 	for(let i=0;i<opts.diseases.length; i++) {
 		let disease = opts.diseases[i].type;
 		addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, [disease], font_size); },
+				function(d) { return ypos(d, [disease], font_size, opts); },
 				function(d) {
 					let dis = disease.replace('_', ' ').replace('cancer', 'ca.');
 					return disease+'_diagnosis_age' in d.data ? dis +": "+ d.data[disease+'_diagnosis_age'] : '';
@@ -3832,10 +3863,43 @@ function addLabels(opts, node) {
 		let arr = (Array.isArray(label) ? label : [label]);
 		if(arr.indexOf('age') === -1 && arr.indexOf('yob') === -1) {
 			addLabel(opts, node, -opts.symbol_size,
-				function(d) { return ypos(d, arr, font_size); },
+				function(d) { return ypos(d, arr, font_size, opts); },
 				function(d) { return get_text(d, arr); }, 'indi_details', arr);
 		}
 	}
+
+	// names of individuals (centered) - positioned inside hover area initially
+	node.filter(function (d) {
+		return !d.data.hidden;
+	}).append("text")
+	.attr("class", 'ped_label display_name')
+	.attr("x", 0)  // center position
+	.attr("y", function(d) { 
+		// Position the name below all existing labels, or inside hover area if no labels
+		if (d.y_offset) {
+			return d.y_offset + font_size * 0.8;
+		} else {
+			// Start inside the hover area - lower
+			return 1.0 * opts.symbol_size;
+		}
+	})
+	.attr("data-original-y", function(d) { 
+		// Store original Y position for animations
+		if (d.y_offset) {
+			return d.y_offset + font_size * 0.8;
+		} else {
+			return 1.0 * opts.symbol_size;
+		}
+	})
+	.attr("text-anchor", "middle")  // center the text
+	.attr("font-family", opts.font_family)
+	.attr("font-size", opts.font_size)
+	.attr("font-weight", opts.font_weight)
+	.text(function(d) {
+		if(opts.DEBUG)
+			return ('display_name' in d.data ? d.data.display_name : d.data.name) + '  ' + d.data.id;
+		return 'display_name' in d.data ? d.data.display_name : '';
+	});
 }
 
 function get_text(d, arr) {
@@ -3871,10 +3935,17 @@ function get_text(d, arr) {
 	if(txt !== "") return txt;
 }
 
-function ypos(d, arr, font_size) {
+function ypos(d, arr, font_size, opts) {
 	if(!node_has_label(d, arr)) return;
-	d.y_offset = (!d.y_offset ? font_size*2.35 : d.y_offset+font_size);
-	return d.y_offset;
+	
+	// Initialize y_offset property if it doesn't exist for this node
+	if (typeof d.y_offset === 'undefined' || d.y_offset === null) {
+		d.y_offset = 1.0 * opts.symbol_size; // Start position lower inside hover area
+		return d.y_offset;
+	} else {
+		d.y_offset = d.y_offset + font_size * 0.8;
+		return d.y_offset;
+	}
 }
 
 function node_has_label(d, labels) {
@@ -3891,7 +3962,17 @@ function addLabel(opts, node, fx, fy, ftext, class_label, labels) {
 	}).append("text")
 	.attr("class", (class_label ? class_label + ' ped_label' : 'ped_label'))
 	.attr("x", fx)
-	.attr("y", fy)
+	.attr("y", function(d) {
+		// Call the positioning function once and store the result
+		if (typeof fy === 'function') {
+			const computedY = fy(d);
+			d3.select(this).attr("data-original-y", computedY);
+			return computedY;
+		} else {
+			d3.select(this).attr("data-original-y", fy);
+			return fy;
+		}
+	})
 	.attr("font-family", opts.font_family)
 	.attr("font-size", opts.font_size)
 	.attr("font-weight", opts.font_weight)
