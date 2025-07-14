@@ -1219,7 +1219,12 @@ function getTextSize(txt, font, fontSize) {
 }
 
 function get_svg_size(svg) {
-	return {w: svg.node().clientWidth, h:svg.node().clientHeight};
+	const node = svg.node();
+	if (!node) {
+		console.error('SVG node is null in get_svg_size');
+		return {w: 0, h: 0};
+	}
+	return {w: node.clientWidth, h: node.clientHeight};
 }
 
 var zoom = /*#__PURE__*/Object.freeze({
@@ -3152,7 +3157,8 @@ function addWidgets(opts, node) {
 				return  (d.data.hidden && !opts.DEBUG ? false : true) &&
 						!((d.data.mother === undefined || d.data.noparents) && key === 'addsibling') &&
 						!(d.data.parent_node !== undefined && d.data.parent_node.length > 1 && key === 'addpartner') &&
-						!(d.data.parent_node === undefined && key === 'addchild') &&
+						// FIXED: Allow addchild for everyone (remove the parent_node restriction)
+						// !(d.data.parent_node === undefined && key === 'addchild') &&
 						!((d.data.noparents === undefined && d.data.top_level === undefined) && key === 'addparents');
 			})
 			.append("text")
@@ -4541,7 +4547,14 @@ function build(options) {
 	let probandIdx  = getProbandIndex(opts.dataset);
 	console.log('drawing proband arrow for probandIdx=', probandIdx);
 	if(typeof probandIdx !== 'undefined') {
+		console.log('Proband name:', opts.dataset[probandIdx].name);
+		console.log('FlattenNodes for proband search:', flattenNodes.map(n => ({name: n.name, data_name: n.data?.name})));
 		let probandNode = getNodeByName(flattenNodes, opts.dataset[probandIdx].name);
+		console.log('Found probandNode:', probandNode);
+		if (!probandNode) {
+			console.error('Proband node not found! Cannot draw proband arrow.');
+			return;
+		}
 		let triid = "triangle"+makeid(3);
 		ped.append("svg:defs").append("svg:marker")	// arrow head
 			.attr("id", triid)

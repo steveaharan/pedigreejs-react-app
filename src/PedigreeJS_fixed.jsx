@@ -101,9 +101,7 @@ class Person {
 			data.brip1,
 			data.pathology
 		];
-		console.log("Raw CanRisk data for", data.name, ":", rawData);
-		console.log("Father ID (position 4):", rawData[4]);
-		console.log("Mother ID (position 5):", rawData[5]);
+		console.log("Raw CanRisk data:", rawData);
 		return rawData.join('\t');
 	}
 
@@ -199,7 +197,6 @@ export const PedigreeJS = () => {
 		window.pedigreejs_pedcache = pedigreejs_pedcache;
 		window.pedigreejs_io = pedigreejs_io;
 		window.pedigreejs_utils = pedigreejs_utils;
-		window.opts = opts; // Make opts globally available for debugging
 		
 		// Ensure D3 is available globally (it should be available from pedigreejs)
 		if (typeof window.d3 === 'undefined' && typeof d3 !== 'undefined') {
@@ -210,133 +207,6 @@ export const PedigreeJS = () => {
 		const checkJQuery = () => {
 			if (typeof window.$ !== 'undefined' && typeof window.$.fn.dialog !== 'undefined') {
 				showPedigree(opts);
-				
-				// Add widget inspection after pedigree is built
-				setTimeout(() => {
-					// WORKAROUND: Since tree building isn't working properly, manually add addchild widget
-					console.log("=== MANUAL WIDGET FIX ===");
-					
-					// Find the actual person group elements using a different approach
-					const allGroups = document.querySelectorAll('g');
-					let child7Group = null;
-					
-					allGroups.forEach(group => {
-						// Look for groups that contain text elements with our person names
-						const textElements = group.querySelectorAll('text');
-						textElements.forEach(text => {
-							if (text.textContent && text.textContent.includes('child7')) {
-								child7Group = group;
-							}
-						});
-					});
-					
-					console.log("Found child7 group:", child7Group);
-					
-					if (child7Group) {
-						// Check if addchild widget already exists
-						const existingAddchild = child7Group.querySelector('.addchild');
-						if (!existingAddchild) {
-							console.log("Adding manual addchild widget to child7");
-							
-							// Create the addchild widget manually
-							const addchildWidget = document.createElementNS("http://www.w3.org/2000/svg", "text");
-							addchildWidget.setAttribute("class", "addchild widget");
-							addchildWidget.setAttribute("x", "0");
-							addchildWidget.setAttribute("y", "-15");
-							addchildWidget.setAttribute("text-anchor", "middle");
-							addchildWidget.setAttribute("fill", "#1f77b4");
-							addchildWidget.style.cursor = "pointer";
-							addchildWidget.style.fontSize = "14px";
-							addchildWidget.textContent = "+";
-							addchildWidget.style.opacity = "0";
-							
-							// Add hover events
-							child7Group.addEventListener('mouseenter', () => {
-								addchildWidget.style.opacity = "1";
-							});
-							child7Group.addEventListener('mouseleave', () => {
-								addchildWidget.style.opacity = "0";
-							});
-							
-							// Add click event (simplified)
-							addchildWidget.addEventListener('click', () => {
-								console.log("Add child clicked for child7!");
-								alert("Add child functionality would go here");
-							});
-							
-							child7Group.appendChild(addchildWidget);
-							console.log("Added manual addchild widget");
-						}
-					}
-					
-					// Widget inspection
-					setTimeout(() => {
-					console.log("=== WIDGET INSPECTION ===");
-					// Look for the actual person nodes, not clipPath elements
-					const child7Element = document.querySelector('g[id="child7"]');
-					const parent3Element = document.querySelector('g[id="parent3"]');
-					const parent4Element = document.querySelector('g[id="parent4"]');
-					
-					console.log("Child7 element:", child7Element);
-					console.log("Parent3 element:", parent3Element);
-					console.log("Parent4 element:", parent4Element);
-					
-					let debugHtml = "<strong>Widget Status:</strong><br/>";
-					
-					if (child7Element) {
-						const widgets = child7Element.querySelectorAll('.widget');
-						const hasAddchild = !!child7Element.querySelector('.addchild');
-						debugHtml += `Child7: ${widgets.length} widgets, addchild: ${hasAddchild}<br/>`;
-						console.log("Child7 widgets:", Array.from(widgets).map(w => w.className));
-						console.log("Child7 has addchild:", hasAddchild);
-					} else {
-						debugHtml += "Child7: g element not found<br/>";
-						// Try to find any child7-related elements
-						const allChild7 = document.querySelectorAll('[id*="child7"]');
-						console.log("All child7 elements:", allChild7);
-					}
-					
-					if (parent3Element) {
-						const widgets = parent3Element.querySelectorAll('.widget');
-						const hasAddchild = !!parent3Element.querySelector('.addchild');
-						debugHtml += `Parent3: ${widgets.length} widgets, addchild: ${hasAddchild}<br/>`;
-						console.log("Parent3 widgets:", Array.from(widgets).map(w => w.className));
-						console.log("Parent3 has addchild:", hasAddchild);
-					}
-					
-					if (parent4Element) {
-						const widgets = parent4Element.querySelectorAll('.widget');
-						const hasAddchild = !!parent4Element.querySelector('.addchild');
-						debugHtml += `Parent4: ${widgets.length} widgets, addchild: ${hasAddchild}<br/>`;
-						console.log("Parent4 widgets:", Array.from(widgets).map(w => w.className));
-						console.log("Parent4 has addchild:", hasAddchild);
-					}
-					
-					// Check if any widgets exist at all
-					const allWidgets = document.querySelectorAll('.widget');
-					const allAddchild = document.querySelectorAll('.addchild');
-					console.log("Total widgets in DOM:", allWidgets.length);
-					console.log("Total addchild widgets in DOM:", allAddchild.length);
-					debugHtml += `<br/><strong>Total widgets:</strong> ${allWidgets.length}<br/>`;
-					
-					// Check the dataset again after tree building
-					if (window.opts && window.opts.dataset) {
-						console.log("=== DATASET AFTER TREE BUILDING ===");
-						debugHtml += "<br/><strong>Parent Node Status:</strong><br/>";
-						window.opts.dataset.forEach(person => {
-							const hasParentNode = person.parent_node ? 'YES' : 'NO';
-							debugHtml += `${person.name}: parent_node=${hasParentNode}<br/>`;
-							console.log(`${person.name}: father=${person.father}, mother=${person.mother}, parent_node=${hasParentNode}`);
-						});
-					}
-					
-					// Update debug display
-					const debugContent = document.getElementById('debug-content');
-					if (debugContent) {
-						debugContent.innerHTML = debugHtml;
-					}
-					}, 500); // End of widget inspection setTimeout
-				}, 1000); // End of manual fix setTimeout
 			} else {
 				setTimeout(checkJQuery, 100);
 			}
@@ -353,27 +223,12 @@ export const PedigreeJS = () => {
 		const generatedCanRiskData = generateCanRiskData(familyData);
 		console.log("Generated CanRisk data for pedigreejs:");
 		console.log(generatedCanRiskData);
-		console.log("Generated CanRisk data (line by line):");
-		generatedCanRiskData.split('\n').forEach((line, index) => {
-			console.log(`Line ${index}: "${line}"`);
-		});
 		
 		try {
 			pedigreejs_io.load_data(generatedCanRiskData, opts);
 			console.log("Data loaded successfully");
 			console.log("Opts dataset after load_data:");
 			console.log(JSON.stringify(opts.dataset, null, 2));
-			
-			// Check if the relationships are being established correctly
-			console.log("=== RELATIONSHIP DEBUGGING ===");
-			opts.dataset.forEach(person => {
-				console.log(`${person.name}:`, {
-					father: person.father,
-					mother: person.mother,
-					proband: person.proband,
-					display_name: person.display_name
-				});
-			});
 			
 			// Check each person's parent relationships
 			opts.dataset.forEach((person, index) => {
@@ -396,25 +251,6 @@ export const PedigreeJS = () => {
 			<div key="tree" id="pedigree"></div>
 			{/* Legacy node properties div - hidden but still needed for some functionality */}
 			<div id="node_properties" title="Edit Details" style={{display: 'none'}}></div>
-			
-			{/* Debug information display */}
-			{/* <div id="debug-info" style={{
-				position: 'fixed',
-				top: '10px',
-				right: '10px',
-				background: 'white',
-				border: '2px solid #333',
-				padding: '10px',
-				zIndex: 10000,
-				maxWidth: '400px',
-				maxHeight: '300px',
-				overflow: 'auto',
-				fontSize: '12px',
-				fontFamily: 'monospace'
-			}}>
-				<strong>Debug Info:</strong><br/>
-				<div id="debug-content">Loading...</div>
-			</div> */}
 			
 			{/* React-based Pedigree Controls */}
 			<PedigreeControls opts={opts} />
@@ -472,12 +308,7 @@ const showPedigree = (opts) => {
 const pedigreejs_load = (opts) => {
 	try {
 		pedigreejs.rebuild(opts);
-		// Only try scaling if rebuild was successful
-		try {
-			pedigreejs_zooming.scale_to_fit(opts);
-		} catch (scalingError) {
-			console.warn("Scaling failed, but pedigree should still be visible:", scalingError);
-		}
+		pedigreejs_zooming.scale_to_fit(opts);
 	} catch(e) {
 		let msg;
 		if (typeof e === "string") {
