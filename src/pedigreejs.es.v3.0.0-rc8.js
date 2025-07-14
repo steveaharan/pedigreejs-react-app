@@ -3049,14 +3049,14 @@ function addWidgets(opts, node) {
 		  // add tooltips to font awesome widgets
 		  if(add_person.type === 'addsibling'){
 			 if(d3.select(this).classed("fa-square"))
-				  square_title.text("add brother");
+				  square_title.text("Add Brother");
 			  else
-				  circle_title.text("add sister");
+				  circle_title.text("Add Sister");
 		  } else if(add_person.type === 'addchild'){
 			  if(d3.select(this).classed("fa-square"))
-				  square_title.text("add son");
+				  square_title.text("Add Son");
 			  else
-				  circle_title.text("add daughter");
+				  circle_title.text("Add Daughter");
 		  }
 	  });
 
@@ -3365,6 +3365,13 @@ function capitaliseFirstLetter(string) {
 
 // if opt.edit is set true (rather than given a function) this is called to edit node attributes
 function openEditDialog(opts, d) {
+	// Check if React edit handler is available
+	if (window.reactEditHandler && typeof window.reactEditHandler === 'function') {
+		window.reactEditHandler(d);
+		return;
+	}
+	
+	// Fallback to jQuery dialog for backwards compatibility
 	$('#node_properties').dialog({
 	    autoOpen: false,
 	    title: d.data.display_name,

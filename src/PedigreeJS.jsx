@@ -1,8 +1,9 @@
 /**
 /* © 2024 University of Cambridge. All rights reserved.  
 **/
-import React from 'react';
+import React, { useState } from 'react';
 import { pedigreejs, pedigreejs_zooming, pedigreejs_pedcache, pedigreejs_io } from "./pedigreejs.es.v3.0.0-rc8";
+import PersonEditDialog from './PersonEditDialog';
 
 
 // Person class to represent individuals in the pedigree
@@ -403,13 +404,13 @@ const generateCanRiskData = (familyData) => {
 	return CanRiskFormatter.formatFamilyData(familyData);
 };
 
-export class PedigreeJS extends React.Component {
+export const PedigreeJS = () => {
+	const [dialogOpen, setDialogOpen] = useState(false);
+	const [selectedPerson, setSelectedPerson] = useState(null);
 
-	constructor() {
-	  super();
-	  const w = window.innerWidth;
-	  const h = window.innerHeight;
-	  this.opts = {
+	const w = window.innerWidth;
+	const h = window.innerHeight;
+	const opts = {
 		'targetDiv': 'pedigreejs',
 		'btn_target': 'pedigree_history',
 		'width': (w > 1800 ? 1700: w - 50),
@@ -427,43 +428,93 @@ export class PedigreeJS extends React.Component {
 						{'type': 'ovarian_cancer', 'colour': '#4DAA4D'},
 						{'type': 'pancreatic_cancer', 'colour': '#4289BA'},
 						{'type': 'prostate_cancer', 'colour': '#D5494A'}],
-		'DEBUG': false};
-	}
+		'DEBUG': false,
+		'onPersonEdit': (person) => {
+			setSelectedPerson(person);
+			setDialogOpen(true);
+		}
+	};
 
-	componentDidMount() {
+	const handleDialogSave = (updatedData) => {
+		if (selectedPerson) {
+			// Get current dataset and make a copy
+			let dataset = pedigreejs_pedcache.current(opts);
+			if (dataset) {
+				let newdataset = JSON.parse(JSON.stringify(dataset)); // Deep copy
+				
+				// Find the person in the dataset by name
+				const person = newdataset.find(p => p.name === selectedPerson.data.name);
+				if (person) {
+					// Update the person's data in the dataset
+					Object.assign(person, updatedData);
+					
+					// Update the opts dataset and trigger rebuild
+					opts.dataset = newdataset;
+					
+					// Trigger rebuild event like the original save function does
+					if (typeof window.$ !== 'undefined') {
+						window.$(document).trigger('rebuild', [opts]);
+					} else {
+						// Fallback to direct rebuild
+						pedigreejs.rebuild(opts);
+					}
+				}
+			}
+			
+			// Clear selection
+			setSelectedPerson(null);
+		}
+		setDialogOpen(false);
+	};
+
+	const handleDialogClose = () => {
+		setDialogOpen(false);
+		setSelectedPerson(null);
+	};
+
+	React.useEffect(() => {
+		// Store the edit handler globally so pedigreejs can access it
+		window.reactEditHandler = opts.onPersonEdit;
+		
 		// Ensure jQuery is available and wait for it to be loaded
 		const checkJQuery = () => {
 			if (typeof window.$ !== 'undefined' && typeof window.$.fn.dialog !== 'undefined') {
-				showPedigree(this.opts);
+				showPedigree(opts);
 			} else {
 				setTimeout(checkJQuery, 100);
 			}
 		};
 		checkJQuery();
+	}, []);
+
+	const local_dataset = pedigreejs_pedcache.current(opts);
+	if (local_dataset !== undefined && local_dataset !== null) {
+		opts.dataset = local_dataset;
+	} else {
+		// Create family data using Person class
+		const familyData = createFamilyData();
+		const generatedCanRiskData = generateCanRiskData(familyData);
+		pedigreejs_io.load_data(generatedCanRiskData, opts);
 	}
 
-	render() {
-	    const opts = this.opts;
-		let local_dataset = pedigreejs_pedcache.current(opts);
-		if (local_dataset !== undefined && local_dataset !== null) {
-			opts.dataset = local_dataset;
-		} else {
-			// Create family data using Person class
-			const familyData = createFamilyData();
-			const generatedCanRiskData = generateCanRiskData(familyData);
-			pedigreejs_io.load_data(generatedCanRiskData, opts);
-		}
-
-		return (
-			<>
-				<div id="pedigree_history" className="p-2"></div>
-				<div key="tree" id="pedigree"></div>
-				{/* Required for edit functionality */}
-				<div id="node_properties" title="Edit Details" style={{display: 'none'}}></div>
-			</>
-	    )
-	}
-}
+	return (
+		<>
+			<div id="pedigree_history" className="p-2"></div>
+			<div key="tree" id="pedigree"></div>
+			{/* Legacy node properties div - hidden but still needed for some functionality */}
+			<div id="node_properties" title="Edit Details" style={{display: 'none'}}></div>
+			
+			{/* React Dialog */}
+			<PersonEditDialog
+				isOpen={dialogOpen}
+				onClose={handleDialogClose}
+				person={selectedPerson}
+				diseases={opts.diseases}
+				onSave={handleDialogSave}
+			/>
+		</>
+	);
+};
 
 /** Show pedigreejs **/
 const showPedigree = (opts) => {
