@@ -406,8 +406,8 @@ export class PedigreeJS extends React.Component {
 	  this.opts = {
 		'targetDiv': 'pedigreejs',
 		'btn_target': 'pedigree_history',
-		'width': (w > 800 ? 700: w - 50),
-		'height': h*0.6,
+		'width': (w > 1800 ? 1700: w - 50),
+		'height': h*0.9,
 		'symbol_size': 30,
 		'font_size': '.75em',
 		'edit': true,
